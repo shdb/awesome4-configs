@@ -32,7 +32,7 @@ local function create_graph()
         forced_width = 50,
         step_width = 2,
         step_spacing = 1,
-		scale = true,
+        scale = true,
         widget = wibox.widget.graph,
     }
     return graph

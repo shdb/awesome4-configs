@@ -17,25 +17,25 @@ local function update(wdg)
     gio.File.new_for_path('/sys/class/power_supply/BAT0/energy_now'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
         if content then
-			local charge = string.gsub(content, "\n$", "")
+            local charge = string.gsub(content, "\n$", "")
             percentage = math.floor(charge / enery_full * 100)
             wdg:set_value(percentage)
-			if percentage >= 30 then
-				wdg:set_color(beautiful.fg_normal)
-				batteryicon:set_image(beautiful.battery)
-			elseif percentage < 15 then
-				wdg:set_color(beautiful.fc_urgent)
-				batteryicon:set_image(beautiful.battery_red)
-			elseif percentage < 30 then
-				wdg:set_color(beautiful.highlight)
-				batteryicon:set_image(beautiful.battery_yellow)
-			end
+            if percentage >= 30 then
+                wdg:set_color(beautiful.fg_normal)
+                batteryicon:set_image(beautiful.battery)
+            elseif percentage < 15 then
+                wdg:set_color(beautiful.fc_urgent)
+                batteryicon:set_image(beautiful.battery_red)
+            elseif percentage < 30 then
+                wdg:set_color(beautiful.highlight)
+                batteryicon:set_image(beautiful.battery_yellow)
+            end
         end
     end)
     gio.File.new_for_path('/sys/class/power_supply/BAT0/status'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
         if content then
-			status = string.gsub(content, "\n$", "")
+            status = string.gsub(content, "\n$", "")
         end
     end)
 end
@@ -44,24 +44,24 @@ local function get_full()
     gio.File.new_for_path('/sys/class/power_supply/BAT0/energy_full'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
         if content then
-			enery_full = string.gsub(content, "\n$", "")
-		end
-	end)
+            enery_full = string.gsub(content, "\n$", "")
+        end
+    end)
 end
 
 local function add_infotext()
-	infotext = naughty.notify {
-		text = tostring(percentage) .. '% ' .. status,
-		timeout = 0,
-		hover_timeout = 0.5,
-		screen = capi.mouse.screen,
-		icon = beautiful.battery,
-	}
+    infotext = naughty.notify {
+        text = tostring(percentage) .. '% ' .. status,
+        timeout = 0,
+        hover_timeout = 0.5,
+        screen = capi.mouse.screen,
+        icon = beautiful.battery,
+    }
 end
 
 local function new(args)
     local args = args or {}
-	get_full()
+    get_full()
     local vbar = wibox.widget.progressbar()
     local bar = wibox.widget {
         {
@@ -94,14 +94,14 @@ local function new(args)
         end
     }
 
-	batteryicon:connect_signal("mouse::enter", function() add_infotext(0) end)
-	batteryicon:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
-	bar:connect_signal("mouse::enter", function() add_infotext(0) end)
-	bar:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
-	openbox:connect_signal("mouse::enter", function() add_infotext(0) end)
-	openbox:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
-	closebox:connect_signal("mouse::enter", function() add_infotext(0) end)
-	closebox:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
+    batteryicon:connect_signal("mouse::enter", function() add_infotext(0) end)
+    batteryicon:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
+    bar:connect_signal("mouse::enter", function() add_infotext(0) end)
+    bar:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
+    openbox:connect_signal("mouse::enter", function() add_infotext(0) end)
+    openbox:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
+    closebox:connect_signal("mouse::enter", function() add_infotext(0) end)
+    closebox:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
 
     update(vbar)
 

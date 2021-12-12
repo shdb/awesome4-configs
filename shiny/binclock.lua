@@ -2,7 +2,7 @@
      Licensed under GNU General Public License v2
       * (c) 2017, Luca CPZ
       * (c) 2013, romockee
-	  * (c) 2019, shdb
+      * (c) 2019, shdb
 --]]
 
 local gears     = require("gears")
@@ -28,19 +28,19 @@ end
 
 function binclock.paintdot(cr, val, shift, count)
     local height = 0
-	local i = 4
+    local i = 4
     for _, bit in ipairs(binclock.dec2bin(val, 4)) do
-		if bit >= 1 then
+        if bit >= 1 then
             cr:set_source(gears.color(binclock.color_active))
         elseif i > count then
             cr:set_source(gears.color(binclock.color_off))
-		else
+        else
             cr:set_source(gears.color(binclock.color_inactive))
         end
         cr:rectangle(shift, height, binclock.dotsize, binclock.dotsize)
         cr:fill()
         height = height + binclock.dotsize + binclock.step
-		i = i - 1
+        i = i - 1
     end
 end
 
@@ -52,7 +52,7 @@ local function factory(args)
     binclock.show_seconds   = args.show_seconds or true
     binclock.color_active   = args.color_active or beautiful.highlight
     binclock.color_inactive = args.color_inactive or beautiful.fg_normal
-	binclock.color_off      = beautiful.bg_urgent
+    binclock.color_off      = beautiful.bg_urgent
     binclock.dotsize        = math.floor(binclock.height / 5)
     binclock.step           = math.floor(binclock.dotsize / 3)
 
