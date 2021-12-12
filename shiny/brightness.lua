@@ -101,38 +101,17 @@ local function new(args)
     openbox:set_markup( shiny.fg(beautiful.highlight, " [ "))
     closebox:set_markup(shiny.fg(beautiful.highlight, " ] "))
 
-    openbox:buttons(
-        gears.table.join(
-            awful.button({ }, 1, function() adjust_brightness(-5, vbar) end),
-            awful.button({ }, 3, function() adjust_brightness( 5, vbar) end),
-            awful.button({ }, 4, function() adjust_brightness( 1, vbar) end),
-            awful.button({ }, 5, function() adjust_brightness( -1, vbar) end)
-        )
-    )
-    brightnessicon:buttons(
-        gears.table.join(
-            awful.button({ }, 1, function() adjust_brightness(-5, vbar) end),
-            awful.button({ }, 3, function() adjust_brightness( 5, vbar) end),
-            awful.button({ }, 4, function() adjust_brightness( 1, vbar) end),
-            awful.button({ }, 5, function() adjust_brightness( -1, vbar) end)
-        )
-    )
-    bar:buttons(
-        gears.table.join(
-            awful.button({ }, 1, function() adjust_brightness(-5, vbar) end),
-            awful.button({ }, 3, function() adjust_brightness( 5, vbar) end),
-            awful.button({ }, 4, function() adjust_brightness( 1, vbar) end),
-            awful.button({ }, 5, function() adjust_brightness( -1, vbar) end)
-        )
-    )
-    closebox:buttons(
-        gears.table.join(
-            awful.button({ }, 1, function() adjust_brightness(-5, vbar) end),
-            awful.button({ }, 3, function() adjust_brightness( 5, vbar) end),
-            awful.button({ }, 4, function() adjust_brightness( 1, vbar) end),
-            awful.button({ }, 5, function() adjust_brightness( -1, vbar) end)
-        )
-    )
+	local widgetboxes = {openbox, brightnessicon, bar, closebox}
+	for i, widgetbox in ipairs(widgetboxes) do
+		widgetbox:buttons(
+			gears.table.join(
+				awful.button({ }, 1, function() adjust_brightness(-5, vbar) end),
+				awful.button({ }, 3, function() adjust_brightness( 5, vbar) end),
+				awful.button({ }, 4, function() adjust_brightness( 1, vbar) end),
+				awful.button({ }, 5, function() adjust_brightness( -1, vbar) end)
+			)
+		)
+	end
 
     local timer = gears.timer {
         autostart = true,
