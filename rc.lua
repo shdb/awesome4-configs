@@ -396,7 +396,7 @@ globalkeys = gears.table.join(
     awful.key({ctrl, alt}, "h",           function() player.previous() end),
     awful.key({modkey, ctrl, alt}, "k",   function() player.seekfw() end),
     awful.key({modkey, ctrl, alt}, "j",   function() player.seekbw() end),
-    awful.key({ modkey, ctrl, alt }, "l", function() awful.spawn.with_shell("i3lock -c 000000 &") end,
+    awful.key({ modkey, ctrl, alt }, "l", function() player.pause(); awful.spawn.with_shell("i3lock -c 000000 &") end,
 		{description = "lock the screen", group = "screen"}),
     awful.key({ modkey, ctrl, alt }, "s", function() awful.spawn.with_shell("systemctl suspend-then-hibernate") end,
 		{description = "suspend the machine", group = "screen"}),

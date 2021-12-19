@@ -50,6 +50,16 @@ function player.playpause()
     player.update(sleeptime)
 end
 
+function player.play()
+    awful.spawn('playerctl play')
+    player.update(sleeptime)
+end
+
+function player.pause()
+    awful.spawn('playerctl pause')
+    player.update(sleeptime)
+end
+
 function player.next()
     awful.spawn('playerctl next')
     player.update(sleeptime)
