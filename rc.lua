@@ -241,23 +241,23 @@ awful.screen.connect_for_each_screen(function(s)
                 layout = wibox.layout.fixed.horizontal,
                 --mylauncher,
                 s.mytaglist,
-				sscreen(s.index),
+                sscreen(s.index),
                 s.mypromptbox,
             },
             s.mytasklist, -- Middle widget
             { -- Right widgets
                 layout = wibox.layout.fixed.horizontal,
                 --mykeyboardlayout,
-				player.widget,
-				cpuwidget,
-				memwidget,
-				--batterywdget,
-				brightnesswdget,
-				lanwidget,
-				volume.widget,
+                player.widget,
+                cpuwidget,
+                memwidget,
+                --batterywdget,
+                brightnesswdget,
+                lanwidget,
+                volume.widget,
                 wibox.widget.systray(),
                 textclock,
-				binclock,
+                binclock,
                 s.mylayoutbox,
             },
         }
@@ -324,14 +324,14 @@ globalkeys = gears.table.join(
     -- Standard program
     awful.key({ modkey,           }, "Return", function () awful.spawn(terminal) end,
               {description = "open a terminal", group = "launcher"}),
-	awful.key({ modkey,           }, "space",
+    awful.key({ modkey,           }, "space",
         function()
             --if mouse.screen > 1 then
             --    teardrop("kitty", -15, nil, 0)
             --else
                 teardrop("kitty -1")
             --end
-		end),
+        end),
     awful.key({ modkey, "Control" }, "r", awesome.restart,
               {description = "reload awesome", group = "awesome"}),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit,
@@ -382,9 +382,9 @@ globalkeys = gears.table.join(
     -- Menubar
     -- awful.key({ modkey }, "p", function() menubar.show() end,
     --           {description = "show the menubar", group = "launcher"})
-	awful.key({}, "XF86AudioRaiseVolume", function() volume.up() end),
+    awful.key({}, "XF86AudioRaiseVolume", function() volume.up() end),
     awful.key({}, "XF86AudioLowerVolume", function() volume.down() end),
-	awful.key({ctrl, alt}, "k",           function() volume.up() end),
+    awful.key({ctrl, alt}, "k",           function() volume.up() end),
     awful.key({ctrl, alt}, "j",           function() volume.down() end),
     awful.key({}, "XF86AudioMute",        function() volume.toggle() end),
     awful.key({ctrl, alt}, "m",           function() volume.toggle() end),
@@ -397,34 +397,34 @@ globalkeys = gears.table.join(
     awful.key({modkey, ctrl, alt}, "k",   function() player.seekfw() end),
     awful.key({modkey, ctrl, alt}, "j",   function() player.seekbw() end),
     awful.key({ modkey, ctrl, alt }, "l", function() player.pause(); awful.spawn.with_shell("i3lock -c 000000 &") end,
-		{description = "lock the screen", group = "screen"}),
+        {description = "lock the screen", group = "screen"}),
     awful.key({ modkey, ctrl, alt }, "s", function() awful.spawn.with_shell("systemctl suspend-then-hibernate") end,
-		{description = "suspend the machine", group = "screen"}),
+        {description = "suspend the machine", group = "screen"}),
     awful.key({ modkey, ctrl, alt }, "h", function() awful.spawn.with_shell("systemctl hibernate") end,
-		{description = "hibernate the machine", group = "screen"}),
-	awful.key({}, "XF86MonBrightnessDown", function() awful.spawn("xbacklight -dec 5") end),
-	awful.key({}, "XF86MonBrightnessUp",   function() awful.spawn("xbacklight -inc 5") end),
+        {description = "hibernate the machine", group = "screen"}),
+    awful.key({}, "XF86MonBrightnessDown", function() awful.spawn("xbacklight -dec 5") end),
+    awful.key({}, "XF86MonBrightnessUp",   function() awful.spawn("xbacklight -inc 5") end),
 
-	awful.key({ modkey, shift, ctrl }, 0,
-	function()
-		local c = client.focus
-		local ison = false
-		local scr = mouse.screen or 1
+    awful.key({ modkey, shift, ctrl }, 0,
+    function()
+        local c = client.focus
+        local ison = false
+        local scr = mouse.screen or 1
 
-		for _, t in pairs(awful.tag.gettags(scr)) do
-			ison = false
+        for _, t in pairs(awful.tag.gettags(scr)) do
+            ison = false
 
-			for _, m in pairs(c:tags()) do
-				if t == m then ison = true end
-			end
+            for _, m in pairs(c:tags()) do
+                if t == m then ison = true end
+            end
 
-			if not ison then
-				awful.client.toggletag(t)
-			end
-			client.focus = c
-		end
-		client.focus = c
-	end)
+            if not ison then
+                awful.client.toggletag(t)
+            end
+            client.focus = c
+        end
+        client.focus = c
+    end)
 )
 
 clientkeys = gears.table.join(
@@ -445,7 +445,7 @@ clientkeys = gears.table.join(
     awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end,
               {description = "toggle keep on top", group = "client"}),
 --    awful.key({ modkey, alt, ctrl }, "k",     function() keyboard.toggle()                   end,
---	          {description = "toggle keyboard layout", group = "screen"}),
+--              {description = "toggle keyboard layout", group = "screen"}),
     awful.key({ modkey,           }, "i",
         function (c)
             -- The client currently has the input focus, so it cannot be
@@ -472,7 +472,7 @@ clientkeys = gears.table.join(
         end ,
         {description = "(un)maximize horizontally", group = "client"}),
 
-	awful.key({ modkey, ctrl }, "t",
+    awful.key({ modkey, ctrl }, "t",
         function(c)
             if topapps[c.class] then
                 topapps[c.class] = not topapps[c.class]
@@ -481,25 +481,25 @@ clientkeys = gears.table.join(
                 c.ontop = not c.ontop
             end
         end),
-	awful.key({ modkey, alt, ctrl }, "i",
+    awful.key({ modkey, alt, ctrl }, "i",
         function(c)
             local string = ""
-			if c.class then
-				string = string .. shiny.bold("Class: ") .. c.class .. "\n"
-			end
-			if c.instance then
-				string = string .. shiny.bold("Instance: ") .. c.instance .. "\n"
-			end
-			if c.name then
-				string = string .. shiny.bold("Name: ") .. c.name .. "\n"
-			end
-			if c.role then
-				string = string .. shiny.bold("Role: ") .. c.role
-			end
-			naughty.notify {
-				title = "Client Info",
-				text  = string,
-			}
+            if c.class then
+                string = string .. shiny.bold("Class: ") .. c.class .. "\n"
+            end
+            if c.instance then
+                string = string .. shiny.bold("Instance: ") .. c.instance .. "\n"
+            end
+            if c.name then
+                string = string .. shiny.bold("Name: ") .. c.name .. "\n"
+            end
+            if c.role then
+                string = string .. shiny.bold("Role: ") .. c.role
+            end
+            naughty.notify {
+                title = "Client Info",
+                text  = string,
+            }
         end)
 )
 
@@ -557,7 +557,7 @@ clientbuttons = gears.table.join(
     awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
     awful.button({ modkey }, 1, awful.mouse.client.move),
     awful.button({ modkey }, 3, awful.mouse.client.resize),
-	awful.button({ctrl, alt}, "4", function() volume.up() end),
+    awful.button({ctrl, alt}, "4", function() volume.up() end),
     awful.button({ctrl, alt}, "5", function() volume.down() end))
 
 -- Set keys
@@ -690,9 +690,9 @@ end)
 --    --elseif #awful.screen.focused().clients > 1 then
 --    else
 --        c.border_width = beautiful.border_width
---		if not notfocus then
---			c.border_color = beautiful.border_focus
---		end 
+--        if not notfocus then
+--            c.border_color = beautiful.border_focus
+--        end 
 --    end
 --end
 --
@@ -709,19 +709,19 @@ screen.connect_signal("arrange", function (s)
         else
             c.border_width = beautiful.border_width
         end
-		if c == client.focus then
-			c.border_color = beautiful.border_focus
-		else
-			c.border_color = beautiful.border_normal
-		end
+        if c == client.focus then
+            c.border_color = beautiful.border_focus
+        else
+            c.border_color = beautiful.border_normal
+        end
     end
 end)
 
 client.connect_signal("unfocus", function(c)
-	c.border_color = beautiful.border_normal
---	border_adjust(c, true)
+    c.border_color = beautiful.border_normal
+--    border_adjust(c, true)
 end)
 client.connect_signal("focus", function(c)
-	c.border_color = beautiful.border_focus
+    c.border_color = beautiful.border_focus
 end)
 -- }}}
