@@ -1,8 +1,14 @@
 local gears     = require("gears")
+local naughty   = require("naughty")
 local awful     = require("awful")
 local gio       = require('lgi').Gio
 local wibox     = require('wibox')
 local beautiful = require('beautiful')
+local capi      = { mouse = mouse }
+
+local infotext = nil
+local total = nil
+local available = nil
 
 local function update(wdg)
     gio.File.new_for_path('/proc/meminfo'):load_contents_async(nil,function(file,task,c)
@@ -11,14 +17,25 @@ local function update(wdg)
             local lines = gears.string.split(content, "\n")
             local memtot = lines[1]
             local memav  = lines[3]
-            local total = memtot:match('(%d+)')
-            local available = memav:match('(%d+)')
+            total = memtot:match('(%d+)')
+            available = memav:match('(%d+)')
 
             local percentage = (1 - (available / total)) * 100
             wdg:set_value(percentage)
 
         end
     end)
+end
+
+local function add_info(args)
+    local memused = total - available
+    infotext = naughty.notify {
+        text = 'mem: ' .. tonumber(string.format("%.2f", memused / 1024^2)) .. '/' .. tonumber(string.format("%.2f", total / 1024^2)) .. ' GB',
+        timeout = 0,
+        hover_timeout = 0.5,
+        screen = capi.mouse.screen,
+    }
+
 end
 
 local function new(args)
@@ -61,6 +78,12 @@ local function new(args)
             update(vbar)
         end
     }
+
+    boxes = {openbox, memicon, vbar, closebox}
+    for boxCount = 1, #boxes do
+        boxes[boxCount]:connect_signal("mouse::enter", function() add_info() end)
+        boxes[boxCount]:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
+    end
 
     update(vbar)
 
