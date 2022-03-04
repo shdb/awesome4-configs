@@ -13,7 +13,7 @@ local theme = {}
 -- }}}
 
 -- {{{ Styles
-theme.font      = "DejaVu Sans Mono 11"
+theme.font      = "DejaVu Sans Mono 9"
 --theme.font      = "snap 7"
 
 theme.highlight  = "#FFCC44"
@@ -95,7 +95,7 @@ theme.mouse_finder_color = "#CC9393"
 -- Variables set for theming the menu:
 -- menu_[bg|fg]_[normal|focus]
 -- menu_[border_color|border_width]
-theme.menu_height = dpi(18)
+theme.menu_height = dpi(16)
 theme.menu_width  = dpi(100)
 -- }}}
 
