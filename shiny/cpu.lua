@@ -28,7 +28,7 @@ local function updateload(wdg)
 end
 
 local function updatetemp(textbox)
-    gio.File.new_for_path('/sys/class/hwmon/hwmon0/temp1_input'):load_contents_async(nil,function(file,task,c)
+    gio.File.new_for_path('/sys/class/hwmon/hwmon1/temp1_input'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
         if content then
             local temp = string.gsub(content, "\n$", "")
