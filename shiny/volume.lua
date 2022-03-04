@@ -21,7 +21,7 @@ local bar = wibox.widget {
         ticks            = true,
         ticks_size       = 2,
         ticks_gap        = 1,
-        max_value        = 100,
+        max_value        = 150,
         widget           = vbar,
     },
     forced_width     = 4,
@@ -33,36 +33,42 @@ volume = {}
 volume.mt = {}
 
 function volume.update(sleeptime)
-    cmd = 'amixer -M'
+    cmd = 'pulsemixer --get-volume'
     if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
     awful.spawn.easy_async_with_shell(cmd, function(stat)
-        local volume = stat:match("(%d?%d?%d)%%")
-        local state  = stat:match("%[(o[nf]*)%]")
-        if volume and state then
+        local volume = stat:match("(%d?%d?%d) ")
+        if volume then
             local volume = tonumber(volume)
-            local state = state:lower()
-            if state == 'off' then
+            vbar:set_value(volume)
+        end
+    end)
+
+    cmd = 'pulsemixer --get-mute'
+    if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
+    awful.spawn.easy_async_with_shell(cmd, function(stat)
+        local state  = stat:match("(%d)")
+        if state then
+            if state == '1' then
                 statusicon:set_image(beautiful.muted)
             else
                 statusicon:set_image(beautiful.volume)
             end
-            vbar:set_value(volume)
         end
     end)
 end
 
 function volume.up()
-    awful.spawn('amixer set Master 2%+')
+    awful.spawn('pulsemixer --change-volume +2')
     volume.update(0.5)
 end
 
 function volume.down()
-    awful.spawn('amixer set Master 2%-')
+    awful.spawn('pulsemixer --change-volume -2')
     volume.update(0.5)
 end
 
 function volume.toggle()
-    awful.spawn('amixer set Master toggle')
+    awful.spawn('pulsemixer --toggle-mute')
     volume.update(0.5)
 end
 
