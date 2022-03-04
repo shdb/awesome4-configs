@@ -11,15 +11,15 @@ beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/shdb/theme.lu
 local naughty = require("naughty")
 local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
-local xrandr = require("xrandr")
+local xrandr          = require("xrandr")
 local shiny           = require("shiny")
 local player          = require("shiny.player")()
 local volume          = require("shiny.volume")()
 local cpuwidget       = require("shiny.cpu")()
 local memwidget       = require("shiny.mem")()
---local batterywdget    = require("shiny.battery")()
+local batterywdget    = require("shiny.battery")()
 local brightnesswdget = require("shiny.brightness")()
-local lanwidget       = require("shiny.lan")('eno1')
+local lanwidget       = require("shiny.lan")()
 -- local keyboard        = require("shiny.keyboard")()
 local textclock       = require("shiny.textclock")()
 local binclock        = require("shiny.binclock")()
@@ -251,7 +251,7 @@ awful.screen.connect_for_each_screen(function(s)
                 player.widget,
                 cpuwidget,
                 memwidget,
-                --batterywdget,
+                batterywdget,
                 brightnesswdget,
                 lanwidget,
                 volume.widget,
@@ -267,6 +267,8 @@ end)
 
 -- {{{ Mouse bindings
 root.buttons(gears.table.join(
+    awful.button({ctrl, alt}, "4", function() volume.up() end),
+    awful.button({ctrl, alt}, "5", function() volume.down() end),
     awful.button({ }, 3, function () mymainmenu:toggle() end),
     awful.button({ }, 4, awful.tag.viewnext),
     awful.button({ }, 5, awful.tag.viewprev)
