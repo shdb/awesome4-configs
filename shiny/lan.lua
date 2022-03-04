@@ -17,6 +17,7 @@ local widget, button, mouse, table, tostring, pairs
 local net = { mt = {} }
 
 
+local interface
 local icon     = wibox.widget.imagebox()
 local infobox  = wibox.widget.textbox()
 local openbox  = wibox.widget.textbox()
@@ -106,7 +107,7 @@ local function padd(text)
     return text
 end
 
-local function update(interface, gd, gu)
+local function update(gd, gu)
     gio.File.new_for_path('/proc/net/dev'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
         if content then
@@ -117,24 +118,34 @@ local function update(interface, gd, gu)
                 .. shiny.fg(beautiful.highlight, " / ")
                 .. padd(data['up_kb'])
             infobox:set_markup(text)
-        else
         end
     end)
 end
 
+function getInterface(args)
+    cmd = 'ip -o -4 route show to default | head -1 | cut -f5 -d" "'
+    awful.spawn.easy_async_with_shell(cmd, function(stat)
+        if stat then
+            interface = string.gsub(stat, "\n", "")
+        end
+    end)
+end
 
-function new(interface)
+function new(args)
     local icon = wibox.widget.imagebox()
     icon:set_image(beautiful.network)
 
     local graph_down = create_graph()
     local graph_up   = create_graph()
 
+    getInterface()
+
     local timer = gears.timer {
         autostart = true,
         timeout   = 1,
         callback  = function()
-            update(interface, graph_down, graph_up)
+            getInterface()
+            update(graph_down, graph_up)
         end
     }
     return { layout = wibox.layout.fixed.horizontal, openbox, icon, infobox, graph_down, graph_up, closebox }
