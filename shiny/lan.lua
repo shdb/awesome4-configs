@@ -107,6 +107,20 @@ local function padd(text)
     return text
 end
 
+local function unit(number)
+    numstr = tostring(number)
+
+    if numstr:len() < 4 then
+        return number .. 'K'
+    elseif numstr:len() < 7 then
+        return math.floor(number / 100 + 0.5) / 10 .. 'M'
+    elseif numstr:len() < 10 then
+        return math.floor(number / 100000 + 0.5) / 10 .. 'M'
+    else
+        return number .. 'K'
+    end
+end
+
 local function update(gd, gu)
     gio.File.new_for_path('/proc/net/dev'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
@@ -114,9 +128,9 @@ local function update(gd, gu)
             local data = process_net_data(content, interface)
             gd:add_value(data['down_kb'])
             gu:add_value(data['up_kb'])
-            text = padd(data['down_kb'])
+            text = padd(unit(data['down_kb']))
                 .. shiny.fg(beautiful.highlight, " / ")
-                .. padd(data['up_kb'])
+                .. padd(unit(data['up_kb']))
             infobox:set_markup(text)
         end
     end)
