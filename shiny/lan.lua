@@ -123,7 +123,7 @@ local function update(gd, gu)
 end
 
 function getInterface(args)
-    cmd = 'ip -o -4 route show to default | head -1 | cut -f5 -d" "'
+    cmd = 'ip -o -4 route show to default | grep -v tun | head -1 | cut -f5 -d" "'
     awful.spawn.easy_async_with_shell(cmd, function(stat)
         if stat then
             interface = string.gsub(stat, "\n", "")
