@@ -113,9 +113,9 @@ local function unit(number)
     if numstr:len() < 4 then
         return number .. 'K'
     elseif numstr:len() < 7 then
-        return math.floor(number / 100 + 0.5) / 10 .. 'M'
+        return math.floor(number / 10^2 + 0.5) / 10 .. 'M'
     elseif numstr:len() < 10 then
-        return math.floor(number / 100000 + 0.5) / 10 .. 'M'
+        return math.floor(number / 10^5 + 0.5) / 10 .. 'M'
     else
         return number .. 'K'
     end
