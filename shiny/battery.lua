@@ -13,6 +13,16 @@ local status = ''
 local infotext = nil
 local batteryicon = wibox.widget.imagebox()
 
+local function have_battery()
+   local f = io.open('/sys/class/power_supply/BAT0/energy_now', 'r')
+   if f ~= nil then
+       io.close(f)
+       return true
+   else
+       return false
+   end
+end
+
 local function update(wdg)
     gio.File.new_for_path('/sys/class/power_supply/BAT0/energy_now'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
@@ -61,6 +71,11 @@ end
 
 local function new(args)
     local args = args or {}
+    local openbox  = wibox.widget.textbox()
+    local closebox = wibox.widget.textbox()
+    if not have_battery() then
+        openbox:set_markup('')
+        return {layout = wibox.layout.fixed.horizontal, openbox} end
     get_full()
     local vbar = wibox.widget.progressbar()
     local bar = wibox.widget {
@@ -81,10 +96,8 @@ local function new(args)
 
     batteryicon:set_image(beautiful.battery)
 
-    local openbox  = wibox.widget.textbox()
-    local closebox = wibox.widget.textbox()
-    openbox:set_markup( shiny.fg(beautiful.highlight, " [ "))
-    closebox:set_markup(shiny.fg(beautiful.highlight, " ] "))
+    openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
+    closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
 
     local timer = gears.timer {
         autostart = true,
