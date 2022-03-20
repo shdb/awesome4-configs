@@ -64,7 +64,7 @@ local function new(args)
     local sepbox   = wibox.widget.textbox()
     local closebox = wibox.widget.textbox()
     openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
-    closebox:set_markup(shiny.fg(beautiful.highlight, " ] "))
+    closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
     sepbox:set_markup(  shiny.fg(beautiful.highlight, " | "))
 
     --local cpu_widget = wibox.container.margin(wibox.container.mirror(cpugraph_widget, { horizontal = true }), 0, 0, 0, 2)

@@ -14,7 +14,7 @@ local infotext = nil
 local brightnessicon = wibox.widget.imagebox()
 local xrandr = nil
 
-function check_backlight()
+local function check_backlight()
    local f = io.open('/sys/class/backlight/intel_backlight/brightness', 'r')
    if f ~= nil then
        io.close(f)
@@ -98,8 +98,8 @@ local function new(args)
 
     local openbox  = wibox.widget.textbox()
     local closebox = wibox.widget.textbox()
-    openbox:set_markup( shiny.fg(beautiful.highlight, " [ "))
-    closebox:set_markup(shiny.fg(beautiful.highlight, " ] "))
+    openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
+    closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
 
     local widgetboxes = {openbox, brightnessicon, bar, closebox}
     for i, widgetbox in ipairs(widgetboxes) do

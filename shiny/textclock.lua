@@ -52,8 +52,8 @@ local function new(args)
 
     local openbox  = wibox.widget.textbox()
     local closebox = wibox.widget.textbox()
-    openbox:set_markup( shiny.fg(beautiful.highlight, " [ "))
-    closebox:set_markup(shiny.fg(beautiful.highlight, " ] "))
+    openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
+    closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
 
     return {layout = wibox.layout.fixed.horizontal, openbox, mytextclock, closebox}
 end

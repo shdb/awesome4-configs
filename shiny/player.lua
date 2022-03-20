@@ -90,7 +90,7 @@ function player.new(o)
     local openbox  = wibox.widget.textbox()
     local closebox = wibox.widget.textbox()
     openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
-    closebox:set_markup(shiny.fg(beautiful.highlight, " ] "))
+    closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
 
     local widgetboxes = {openbox, player.textbox, closebox}
     for i, widgetbox in ipairs(widgetboxes) do

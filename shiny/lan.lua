@@ -23,7 +23,7 @@ local infobox  = wibox.widget.textbox()
 local openbox  = wibox.widget.textbox()
 local closebox = wibox.widget.textbox()
 openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
-closebox:set_markup(shiny.fg(beautiful.highlight, " ] "))
+closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
 
 local function create_graph()
     local graph = wibox.widget {
