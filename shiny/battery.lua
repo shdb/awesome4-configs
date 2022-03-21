@@ -73,9 +73,12 @@ local function new(args)
     local args = args or {}
     local openbox  = wibox.widget.textbox()
     local closebox = wibox.widget.textbox()
+
     if not have_battery() then
         openbox:set_markup('')
-        return {layout = wibox.layout.fixed.horizontal, openbox} end
+        return {layout = wibox.layout.fixed.horizontal, openbox}
+    end
+
     get_full()
     local vbar = wibox.widget.progressbar()
     local bar = wibox.widget {
