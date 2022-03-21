@@ -30,10 +30,11 @@ end
 local function add_info(args)
     local memused = total - available
     infotext = naughty.notify {
-        text = 'mem: ' .. tonumber(string.format("%.2f", memused / 1024^2)) .. '/' .. tonumber(string.format("%.2f", total / 1024^2)) .. ' GB',
+        text = tonumber(string.format("%.2f", memused / 1024^2)) .. '/' .. tonumber(string.format("%.2f", total / 1024^2)) .. ' GB',
         timeout = 0,
         hover_timeout = 0.5,
         screen = capi.mouse.screen,
+        icon = beautiful.mem,
     }
 
 end
