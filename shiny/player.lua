@@ -103,7 +103,7 @@ function player.new(o)
         )
     end
 
-    local timer = gears.timer {
+    gears.timer {
         autostart = true,
         timeout   = 5,
         callback  = function()

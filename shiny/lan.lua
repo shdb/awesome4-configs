@@ -154,7 +154,7 @@ function new(args)
 
     getInterface()
 
-    local timer = gears.timer {
+    gears.timer {
         autostart = true,
         timeout   = 1,
         callback  = function()

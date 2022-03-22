@@ -70,7 +70,7 @@ local function new(args)
     --local cpu_widget = wibox.container.margin(wibox.container.mirror(cpugraph_widget, { horizontal = true }), 0, 0, 0, 2)
     local cpu_widget = cpugraph_widget
 
-    local timer = gears.timer {
+    gears.timer {
         autostart = true,
         timeout   = 1,
         callback  = function()

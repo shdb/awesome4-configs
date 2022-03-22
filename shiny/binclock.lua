@@ -87,7 +87,7 @@ local function factory(args)
         layout = wibox.widget.base.make_widget
     }
 
-    binclock.timer = gears.timer {
+    gears.timer {
         autostart  = true,
         timeout    = binclock.show_seconds and 1 or 60,
         callback   = function()

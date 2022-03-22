@@ -113,7 +113,7 @@ local function new(args)
         )
     end
 
-    local timer = gears.timer {
+    gears.timer {
         autostart = true,
         timeout   = 5,
         callback  = function()

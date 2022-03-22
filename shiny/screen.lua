@@ -38,7 +38,7 @@ local function update()
 end
 
 if screen.count() > 1 then
-    local timer = gears.timer {
+    gears.timer {
         autostart = true,
         timeout   = 1,
         callback  = function()

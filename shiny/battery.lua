@@ -102,7 +102,7 @@ local function new(args)
     openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
     closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
 
-    local timer = gears.timer {
+    gears.timer {
         autostart = true,
         timeout   = 5,
         callback  = function()
