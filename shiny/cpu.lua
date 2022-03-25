@@ -6,6 +6,7 @@ local beautiful = require('beautiful')
 
 local total_prev = 0
 local idle_prev = 0
+local hwmon_num = 0
 
 local function updateload(wdg)
     gio.File.new_for_path('/proc/stat'):load_contents_async(nil,function(file,task,c)
@@ -28,7 +29,7 @@ local function updateload(wdg)
 end
 
 local function updatetemp(textbox)
-    gio.File.new_for_path('/sys/class/hwmon/hwmon1/temp1_input'):load_contents_async(nil,function(file,task,c)
+    gio.File.new_for_path('/sys/class/hwmon/hwmon' .. hwmon_num .. '/temp1_input'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
         if content then
             local temp = string.gsub(content, "\n$", "")
@@ -37,6 +38,22 @@ local function updatetemp(textbox)
             textbox:set_markup("nv")
         end
     end)
+end
+
+local function get_hwmon()
+    local hwmon_path = '/sys/class/hwmon/'
+    local file_list = gio.File.new_for_path(hwmon_path):enumerate_children("standard::*", 0)
+    if not file_list then return nil end
+    for file in function() return file_list:next_file() end do
+        local hwmon = file:get_display_name()
+        gio.File.new_for_path(hwmon_path .. hwmon .. '/name'):load_contents_async(nil,function(file,task,c)
+            local content = file:load_contents_finish(task)
+            content = string.gsub(content, "\n", "")
+            if content and content == 'coretemp' then
+                hwmon_num = hwmon:match('(%d+)$')
+            end
+        end)
+    end
 end
 
 local function new(args)
@@ -70,6 +87,7 @@ local function new(args)
     --local cpu_widget = wibox.container.margin(wibox.container.mirror(cpugraph_widget, { horizontal = true }), 0, 0, 0, 2)
     local cpu_widget = cpugraph_widget
 
+    get_hwmon()
     gears.timer {
         autostart = true,
         timeout   = 1,
