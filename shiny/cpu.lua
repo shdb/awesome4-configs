@@ -51,6 +51,7 @@ local function get_hwmon()
             content = string.gsub(content, "\n", "")
             if content and content == 'coretemp' then
                 hwmon_num = hwmon:match('(%d+)$')
+                return hwmon_num
             end
         end)
     end
