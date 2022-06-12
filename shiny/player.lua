@@ -70,13 +70,15 @@ function player.previous()
     player.update(sleeptime)
 end
 
-function player.seekfw()
-    awful.spawn('playerctl position 5+')
+function player.seekfw(amount)
+    amount = amount or 5
+    awful.spawn('playerctl position ' .. amount .. '+')
     player.update(sleeptime)
 end
 
-function player.seekbw()
-    awful.spawn('playerctl position 5-')
+function player.seekbw(amount)
+    amount = amount or 5
+    awful.spawn('playerctl position ' .. amount .. '-')
     player.update(sleeptime)
 end
 
@@ -98,7 +100,9 @@ function player.new(o)
             gears.table.join(
                 awful.button({ }, 1, function() player.playpause() end),
                 awful.button({ }, 3, function() player.next() end),
-                awful.button({ }, 2, function() player.previous() end)
+                awful.button({ }, 2, function() player.previous() end),
+                awful.button({ }, 4, function() player.seekbw(1) end),
+                awful.button({ }, 5, function() player.seekfw(1) end)
             )
         )
     end
