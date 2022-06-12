@@ -57,13 +57,15 @@ function volume.update(sleeptime)
     end)
 end
 
-function volume.up()
-    awful.spawn('pulsemixer --change-volume +2')
+function volume.up(amount)
+    amount = amount or 2
+    awful.spawn('pulsemixer --change-volume +' .. amount)
     volume.update(0.5)
 end
 
-function volume.down()
-    awful.spawn('pulsemixer --change-volume -2')
+function volume.down(amount)
+    amount = amount or 2
+    awful.spawn('pulsemixer --change-volume -' .. amount)
     volume.update(0.5)
 end
 
@@ -78,6 +80,17 @@ function volume.new(o)
     local closebox = wibox.widget.textbox()
     openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
     closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
+
+    local widgetboxes = {openbox, statusicon, bar, closebox}
+    for i, widgetbox in ipairs(widgetboxes) do
+        widgetbox:buttons(
+            gears.table.join(
+                awful.button({ }, 1, function() o.toggle() end),
+                awful.button({ }, 4, function() o.up(1) end),
+                awful.button({ }, 5, function() o.down(1) end)
+            )
+        )
+    end
 
     gears.timer {
         autostart = true,
