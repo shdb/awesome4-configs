@@ -17,13 +17,14 @@ topapps = {
         ["MPlayer"]  = true,
         ["mplayer2"] = true,
         ["mpv"]      = true,
+        ["Toolkit"]  = true,
     }
 
 local function update(c)
     local lscreen = c and c.screen or mouse.screen
     for _, ttag in pairs(lscreen.selected_tags) do
         for _, tclient in pairs(ttag:clients()) do
-            if topapps[tclient.class] and not tclient.fullscreen then
+            if (topapps[tclient.class] or topapps[tclient.instance]) and not tclient.fullscreen then
                 tclient.ontop = true
                 tclient:raise()
             end
