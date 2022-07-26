@@ -7,15 +7,17 @@ local beautiful = require('beautiful')
 local math      = require('math')
 local capi      = { mouse = mouse }
 
-local maxbrightness = 0
+local maxsysfsbrightness = 0
 local percentage = 0
+local sysfspath = '/sys/class/backlight/intel_backlight/'
 local status = ''
 local infotext = nil
 local brightnessicon = wibox.widget.imagebox()
 local xrandr = nil
+local percentagesteps = 5
 
 local function check_backlight()
-   local f = io.open('/sys/class/backlight/intel_backlight/brightness', 'r')
+   local f = io.open(sysfspath .. 'brightness', 'r')
    if f ~= nil then
        io.close(f)
        xrandr = false
@@ -31,11 +33,11 @@ local function update(wdg)
             wdg:set_value(percentage)
         end)
     else
-        gio.File.new_for_path('/sys/class/backlight/intel_backlight/brightness'):load_contents_async(nil,function(file,task,c)
+        gio.File.new_for_path(sysfspath .. 'brightness'):load_contents_async(nil,function(file,task,c)
             local content = file:load_contents_finish(task)
             if content then
                 local brightness = string.gsub(content, "\n$", "")
-                percentage = math.floor(brightness / maxbrightness * 100)
+                percentage = math.floor(brightness / maxsysfsbrightness * 100)
                 wdg:set_value(percentage)
             end
         end)
@@ -43,24 +45,26 @@ local function update(wdg)
 end
 
 local function get_max()
-    gio.File.new_for_path('/sys/class/backlight/intel_backlight/max_brightness'):load_contents_async(nil,function(file,task,c)
+    gio.File.new_for_path(sysfspath .. 'max_brightness'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
         if content then
-            maxbrightness = string.gsub(content, "\n$", "")
+            maxsysfsbrightness = string.gsub(content, "\n$", "")
         end
     end)
 end
 
 local function adjust_brightness(amount, wdg)
-    newperc = percentage + amount
+    local newperc = percentage + amount
     if newperc > 100 then newperc = 100 end
-    if newperc < 5 then newperc = 5 end
-    newbrightness = newperc / 100
+    if newperc < percentagesteps then newperc = percentagesteps end
+    newperc = math.floor((newperc + percentagesteps / 2) / percentagesteps) * percentagesteps
 
     if xrandr == true then
-        awful.spawn.with_shell('for i in $(xrandr | grep " conn" | cut -f1 -d" "); do xrandr --output $i --brightness ' .. newbrightness .. "; done")
+        local newxbrightness = newperc / 100
+        awful.spawn.with_shell('for i in $(xrandr | grep " conn" | cut -f1 -d" "); do xrandr --output $i --brightness ' .. newxbrightness .. "; done")
     else
-        awful.spawn.with_shell("xbacklight -inc " .. amount)
+        local newsysfsbrightness = math.floor(maxsysfsbrightness / 100 * newperc + 0.5)
+        gio.File.new_for_path(sysfspath .. 'brightness'):replace_contents_async(newsysfsbrightness,nil,nil,{},nil,nil,0)
     end
 
     wdg:set_value(newperc)
@@ -108,7 +112,7 @@ local function new(args)
                 awful.button({ }, 1, function() adjust_brightness(-5, vbar) end),
                 awful.button({ }, 3, function() adjust_brightness( 5, vbar) end),
                 awful.button({ }, 4, function() adjust_brightness( 1, vbar) end),
-                awful.button({ }, 5, function() adjust_brightness( -1, vbar) end)
+                awful.button({ }, 5, function() adjust_brightness(-1, vbar) end)
             )
         )
     end
