@@ -14,7 +14,6 @@ local status = ''
 local infotext = nil
 local brightnessicon = wibox.widget.imagebox()
 local xrandr = nil
-local percentagesteps = 5
 
 local function check_backlight()
    local f = io.open(sysfspath .. 'brightness', 'r')
@@ -55,9 +54,10 @@ end
 
 local function adjust_brightness(amount, wdg)
     local newperc = percentage + amount
+    local amountabs = math.abs(amount)
     if newperc > 100 then newperc = 100 end
-    if newperc < percentagesteps then newperc = percentagesteps end
-    newperc = math.floor((newperc + percentagesteps / 2) / percentagesteps) * percentagesteps
+    if newperc < amountabs then newperc = amountabs end
+    newperc = math.floor((newperc + amountabs / 2) / amountabs) * amountabs
 
     if xrandr == true then
         local newxbrightness = newperc / 100
