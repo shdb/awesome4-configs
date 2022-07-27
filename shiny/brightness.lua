@@ -9,20 +9,27 @@ local capi      = { mouse = mouse }
 
 local maxsysfsbrightness = 0
 local percentage = 0
-local sysfspath = '/sys/class/backlight/intel_backlight/'
+local sysfspath = ''
 local status = ''
 local infotext = nil
 local brightnessicon = wibox.widget.imagebox()
 local xrandr = nil
 
 local function check_backlight()
-   local f = io.open(sysfspath .. 'brightness', 'r')
-   if f ~= nil then
-       io.close(f)
-       xrandr = false
-   else
-       xrandr = true
-   end
+    local blbasepath = '/sys/class/backlight/'
+    local bllist = gio.File.new_for_path(blbasepath):enumerate_children("standard::*", 0)
+    if not bllist then
+        xrandr = true
+        return nil
+    end
+    for file in function() return bllist:next_file() end do
+        local bl = file:get_display_name()
+        xrandr = false
+        sysfspath = blbasepath .. bl .. '/'
+        return bl
+    end
+    xrandr = true
+    return nil
 end
 
 local function update(wdg)
