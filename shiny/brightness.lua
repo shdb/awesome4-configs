@@ -12,10 +12,14 @@ local percentage = 0
 local sysfspath = ''
 local status = ''
 local infotext = nil
+local vbar = wibox.widget.progressbar()
 local brightnessicon = wibox.widget.imagebox()
 local xrandr = nil
 
-local function check_backlight()
+brightness = {}
+brightness.mt = {}
+
+function brightness.check_backlight()
     local blbasepath = '/sys/class/backlight/'
     local bllist = gio.File.new_for_path(blbasepath):enumerate_children("standard::*", 0)
     if not bllist then
@@ -32,11 +36,11 @@ local function check_backlight()
     return nil
 end
 
-local function update(wdg)
+function brightness.update()
     if xrandr == true then
         awful.spawn.easy_async_with_shell('xrandr --verbose | grep -i brightness | head -n1 | cut -f2 -d" "' , function(stat)
             percentage = stat * 100
-            wdg:set_value(percentage)
+            vbar:set_value(percentage)
         end)
     else
         gio.File.new_for_path(sysfspath .. 'brightness'):load_contents_async(nil,function(file,task,c)
@@ -44,13 +48,13 @@ local function update(wdg)
             if content then
                 local brightness = string.gsub(content, "\n$", "")
                 percentage = math.floor(brightness / maxsysfsbrightness * 100)
-                wdg:set_value(percentage)
+                vbar:set_value(percentage)
             end
         end)
     end
 end
 
-local function get_max()
+function brightness.get_max()
     gio.File.new_for_path(sysfspath .. 'max_brightness'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
         if content then
@@ -59,7 +63,7 @@ local function get_max()
     end)
 end
 
-local function adjust_brightness(amount, wdg)
+function brightness.adjust(amount)
     local newperc = percentage + amount
     local amountabs = math.abs(amount)
     if newperc > 100 then newperc = 100 end
@@ -74,7 +78,7 @@ local function adjust_brightness(amount, wdg)
         gio.File.new_for_path(sysfspath .. 'brightness'):replace_contents_async(newsysfsbrightness,nil,nil,{},nil,nil,0)
     end
 
-    wdg:set_value(newperc)
+    vbar:set_value(newperc)
     naughty.notify {
         title = "Brightness",
         text = tostring(newperc),
@@ -84,11 +88,10 @@ local function adjust_brightness(amount, wdg)
     percentage = newperc
 end
 
-local function new(args)
-    local args = args or {}
-    check_backlight()
-    if not xrandr then get_max() end
-    local vbar = wibox.widget.progressbar()
+function brightness.new(o)
+    setmetatable(o, brightness.mt)
+    o.check_backlight()
+    if not xrandr then o.get_max() end
     local bar = wibox.widget {
         {
             color            = beautiful.fg_normal,
@@ -116,10 +119,10 @@ local function new(args)
     for i, widgetbox in ipairs(widgetboxes) do
         widgetbox:buttons(
             gears.table.join(
-                awful.button({ }, 1, function() adjust_brightness(-5, vbar) end),
-                awful.button({ }, 3, function() adjust_brightness( 5, vbar) end),
-                awful.button({ }, 4, function() adjust_brightness( 1, vbar) end),
-                awful.button({ }, 5, function() adjust_brightness(-1, vbar) end)
+                awful.button({ }, 1, function() o.adjust(-5) end),
+                awful.button({ }, 3, function() o.adjust( 5) end),
+                awful.button({ }, 4, function() o.adjust( 1) end),
+                awful.button({ }, 5, function() o.adjust(-1) end)
             )
         )
     end
@@ -128,13 +131,14 @@ local function new(args)
         autostart = true,
         timeout   = 5,
         callback  = function()
-            update(vbar)
+            o.update()
         end
     }
 
-    update(vbar)
+    o.update()
 
-    return {layout = wibox.layout.fixed.horizontal, openbox, brightnessicon, bar, closebox}
+    o.widget = {layout = wibox.layout.fixed.horizontal, openbox, brightnessicon, bar, closebox}
+    return o
 end
 
-return setmetatable({}, { __call = function(_, ...) return new(...) end })
+return setmetatable({}, { __call = function(_, ...) return brightness:new(...) end })

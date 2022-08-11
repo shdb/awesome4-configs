@@ -8,24 +8,24 @@ local wibox = require("wibox")
 local beautiful = require("beautiful")
 beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/shdb/theme.lua")
 -- Notification library
-local naughty         = require("naughty")
-local menubar         = require("menubar")
-local hotkeys_popup   = require("awful.hotkeys_popup").widget
-local xrandr          = require("xrandr")
-local shiny           = require("shiny")
-local player          = require("shiny.player")()
-local volume          = require("shiny.volume")()
-local cpuwidget       = require("shiny.cpu")()
-local memwidget       = require("shiny.mem")()
-local batterywdget    = require("shiny.battery")()
-local brightnesswdget = require("shiny.brightness")()
-local lanwidget       = require("shiny.lan")()
--- local keyboard        = require("shiny.keyboard")()
-local textclock       = require("shiny.textclock")()
-local binclock        = require("shiny.binclock")()
-local sscreen         = require("shiny.screen")
-local topapps         = require("shiny.topapps")
-local teardrop = require("teardrop")
+local naughty       = require("naughty")
+local menubar       = require("menubar")
+local hotkeys_popup = require("awful.hotkeys_popup").widget
+local xrandr        = require("xrandr")
+local shiny         = require("shiny")
+local player        = require("shiny.player")()
+local volume        = require("shiny.volume")()
+local cpuwidget     = require("shiny.cpu")()
+local memwidget     = require("shiny.mem")()
+local batterywdget  = require("shiny.battery")()
+local brightness    = require("shiny.brightness")()
+local lanwidget     = require("shiny.lan")()
+-- local keyboard      = require("shiny.keyboard")()
+local textclock     = require("shiny.textclock")()
+local binclock      = require("shiny.binclock")()
+local sscreen       = require("shiny.screen")
+local topapps       = require("shiny.topapps")
+local teardrop      = require("teardrop")
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
@@ -260,7 +260,7 @@ awful.screen.connect_for_each_screen(function(s)
                 cpuwidget,
                 memwidget,
                 batterywdget,
-                brightnesswdget,
+                brightness.widget,
                 lanwidget,
                 volume.widget,
                 wibox.widget.systray(),
@@ -412,8 +412,8 @@ globalkeys = gears.table.join(
         {description = "suspend the machine", group = "screen"}),
     awful.key({modkey, ctrl, alt}, "h", function() awful.spawn.with_shell("systemctl hibernate") end,
         {description = "hibernate the machine", group = "screen"}),
-    awful.key({}, "XF86MonBrightnessDown", function() awful.spawn("xbacklight -dec 5") end),
-    awful.key({}, "XF86MonBrightnessUp",   function() awful.spawn("xbacklight -inc 5") end),
+    awful.key({}, "XF86MonBrightnessDown", function() brightness.adjust(-5) end),
+    awful.key({}, "XF86MonBrightnessUp",   function() brightness.adjust( 5) end),
 
     awful.key({modkey, shift, ctrl}, 0,
     function()
