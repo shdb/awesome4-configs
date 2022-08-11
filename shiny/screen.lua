@@ -1,7 +1,7 @@
 local shiny     = require("shiny")
 local gears     = require("gears")
 local beautiful = require("beautiful")
-local wibox     = require("wibox")        
+local wibox     = require("wibox")
 
 local setmetatable = setmetatable
 local tonumber = tonumber
@@ -18,7 +18,7 @@ local function update()
     if screen.count() == 1 then return end
     for s = 1, screen.count() do
         local ltext = ""
-    
+
         for ls = 1, screen.count() do
             if mouse.screen.index == s and mouse.screen.index == ls then
                 ltext = ltext .. shiny.fg(beautiful.highlight, s) .. " "
@@ -30,10 +30,10 @@ local function update()
         end
 
         infobox[s]:set_markup(
-                shiny.fg(beautiful.highlight, "[ ")
-                .. ltext
-                .. shiny.fg(beautiful.highlight, "]")
-            )
+            shiny.fg(beautiful.highlight, "[ ")
+            .. ltext
+            .. shiny.fg(beautiful.highlight, "]")
+        )
     end
 end
 
@@ -57,5 +57,4 @@ function new(lsc)
     return infobox[lsc]
 end
 
---return setmetatable(screen_mod, screen_mod.mt)
 return setmetatable({}, { __call = function(_, ...) return new(...) end })
