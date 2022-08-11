@@ -45,7 +45,9 @@ local function new(args)
     mytextclock:buttons(
         gears.table.join(
             awful.button({ }, 1, function() add_calendar(-1) end),
-            awful.button({ }, 3, function() add_calendar( 1) end)
+            awful.button({ }, 3, function() add_calendar( 1) end),
+            awful.button({ }, 4, function() add_calendar(-1) end),
+            awful.button({ }, 5, function() add_calendar( 1) end)
         )
     )
 
