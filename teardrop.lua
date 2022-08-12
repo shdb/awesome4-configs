@@ -28,6 +28,7 @@ local pairs = pairs
 local awful = require("awful")
 local beautiful = require("beautiful")
 local setmetatable = setmetatable
+local math = math
 local capi = {
     mouse = mouse,
     client = client,
@@ -43,8 +44,8 @@ local dropdown = {}
 -- exist, or toggle between hidden and visible states when it does
 function toggle(prog, displacement, vert, horiz, width, height, sticky, screen)
 	local displacement = displacement or 0
-    local vert         = vert         or "top"
-    local horiz        = horiz        or "center"
+    local vert         = vert         or "top"     -- top, bottom or center
+    local horiz        = horiz        or "center"  -- left, right or center
     local width        = width        or 1
     local height       = height       or 0.21
     local sticky       = sticky       or true
@@ -84,16 +85,16 @@ function toggle(prog, displacement, vert, horiz, width, height, sticky, screen)
             -- Client geometry and placement
             local screengeom = capi.screen[screen].workarea
 
-            if width  <= 1 then width  = screengeom.width  * width  - 2 * beautiful.border_width end
-            if height <= 1 then height = screengeom.height * height end
+            if width  <= 1 then width  = math.floor(screengeom.width  * width  - 2 * beautiful.border_width + 0.5) end
+            if height <= 1 then height = math.floor(screengeom.height * height + 0.5) end
 
-            if     horiz == "left"  then x = screengeom.x + displacement
-            elseif horiz == "right" then x = screengeom.width - width + displacement
-            else   x =  screengeom.x+(screengeom.width-(width + 2 * beautiful.border_width))/2 end
+            if     horiz == "left"  then x = displacement
+            elseif horiz == "right" then x = screengeom.width - width + displacement - 2 * beautiful.border_width
+            else   x = (screengeom.width - (width + 2 * beautiful.border_width))/2 end
 
-            if     vert == "bottom" then y = screengeom.height + screengeom.y - height + displacement
-            elseif vert == "center" then y = screengeom.y+(screengeom.height-height)/2
-            else   y =  screengeom.y - screengeom.y + 15 + displacement end
+            if     vert == "bottom" then y = screengeom.height - height - displacement + beautiful.titlebar_height - beautiful.border_width
+            elseif vert == "center" then y = (screengeom.height - height + beautiful.titlebar_height + 2 * beautiful.border_width)/2
+            else   y = beautiful.titlebar_height + displacement end
 
             -- Client properties
             c:geometry({ x = x, y = y, width = width, height = height })
@@ -103,6 +104,7 @@ function toggle(prog, displacement, vert, horiz, width, height, sticky, screen)
             if sticky then c.sticky = true end
             if c.titlebar then awful.titlebar.remove(c) end
 
+            awful.client.movetotag(awful.tag.selected(screen), c)
             c:raise()
             capi.client.focus = c
         end
@@ -115,14 +117,15 @@ function toggle(prog, displacement, vert, horiz, width, height, sticky, screen)
         c = dropdown[prog][screen]
 
         -- Switch the client to the current workspace
-        if c:isvisible() == false then c.hidden = true;
+        if c:isvisible() == false then
+            c.hidden = true;
             awful.client.movetotag(awful.tag.selected(screen), c)
         end
 
         -- Focus and raise if hidden
         if c.hidden then
             -- Make sure it is centered
-            if vert  == "center" then awful.placement.center_vertical(c)   end
+            --if vert  == "center" then awful.placement.center_vertical(c)   end
             --if horiz == "center" then awful.placement.center_horizontal(c) end
             c.hidden = false
             c:raise()

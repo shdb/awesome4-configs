@@ -46,6 +46,7 @@ theme.border_marked = "#66FF00"
 -- {{{ Titlebars
 theme.titlebar_bg_focus  = "#3F3F3F"
 theme.titlebar_bg_normal = "#3F3F3F"
+theme.titlebar_height    = 15
 -- }}}
 
 theme.battery        = path .. "icons/battery.png"
