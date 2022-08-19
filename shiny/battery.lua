@@ -5,7 +5,6 @@ local wibox     = require('wibox')
 local naughty   = require('naughty')
 local beautiful = require('beautiful')
 local math      = require('math')
-local capi      = { mouse = mouse }
 
 local enery_full = 0
 local percentage = 0
@@ -64,7 +63,7 @@ local function add_infotext()
         text = tostring(percentage) .. '% ' .. status,
         timeout = 0,
         hover_timeout = 0.5,
-        screen = capi.mouse.screen,
+        screen = awful.screen.focused(),
         icon = beautiful.battery,
     }
 end

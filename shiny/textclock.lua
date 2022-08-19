@@ -4,7 +4,6 @@ local naughty   = require("naughty")
 local awful     = require("awful")
 local gears     = require("gears")
 local beautiful = require("beautiful")
-local capi      = { mouse = mouse }
 
 local calendar   = nil
 local cal_offset = 0
@@ -30,7 +29,7 @@ local function add_calendar(inc_offset)
                 text = ctext,
                 timeout = 0,
                 hover_timeout = 0.5,
-                screen = capi.mouse.screen,
+                screen = awful.screen.focused(),
             }
         end
     end)

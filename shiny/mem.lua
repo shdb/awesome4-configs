@@ -4,7 +4,6 @@ local awful     = require("awful")
 local gio       = require('lgi').Gio
 local wibox     = require('wibox')
 local beautiful = require('beautiful')
-local capi      = { mouse = mouse }
 
 local infotext = nil
 local total = nil
@@ -33,7 +32,7 @@ local function add_info(args)
         text = tonumber(string.format("%.2f", memused / 1024^2)) .. '/' .. tonumber(string.format("%.2f", total / 1024^2)) .. ' GB',
         timeout = 0,
         hover_timeout = 0.5,
-        screen = capi.mouse.screen,
+        screen = awful.screen.focused(),
         icon = beautiful.mem,
     }
 

@@ -5,7 +5,6 @@ local wibox     = require('wibox')
 local naughty   = require('naughty')
 local beautiful = require('beautiful')
 local math      = require('math')
-local capi      = { mouse = mouse }
 
 local maxsysfsbrightness = 0
 local percentage = 0
@@ -83,7 +82,7 @@ function brightness.adjust(amount)
         title = "Brightness",
         text = tostring(newperc),
         timeout = 2,
-        screen = capi.mouse.screen,
+        screen = awful.screen.focused(),
     }
     percentage = newperc
 end
