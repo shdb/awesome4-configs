@@ -8,16 +8,16 @@ module("shiny")
 
 function fg(color, text)
     color = color or beautiful.fg_normal
-    text = text or ""         
+    text = text or ""
     return '<span color="' .. color .. '">' .. text .. '</span>'
-end                            
-                      
+end
+
 function bold(text)
     return '<b>' .. text .. '</b>'
 end
 
 function remove_notify(notify)
-    if notify then   
+    if notify then
         naughty.destroy(notify)
         notify = nil
     end
@@ -53,4 +53,11 @@ function round_num(num, idp, dot)
         num = math.floor(num + 0.5)
     end
     return num
+end
+
+function lpaddto(str, num)
+    while string.len(str) < num do
+        str = ' ' .. str
+    end
+    return str
 end
