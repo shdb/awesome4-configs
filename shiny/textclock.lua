@@ -21,6 +21,8 @@ local function add_calendar(inc_offset)
             cal = string.gsub(cal, "^(%s+%w+%s+%d+)", shiny.bold(shiny.fg(beautiful.highlight, "%1")))
         end
 
+        cal = string.gsub(cal, '\n$', '')
+
         local ctext = string.format('<span font_desc="%s">%s</span>', "monospace", cal)
         if inc_offset ~= 0 then
             naughty.replace_text(calendar, nil, ctext)
