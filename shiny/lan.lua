@@ -115,7 +115,7 @@ local function unit(number)
     elseif numstr:len() < 7 then
         return math.floor(number / 10^2 + 0.5) / 10 .. 'M'
     elseif numstr:len() < 10 then
-        return math.floor(number / 10^5 + 0.5) / 10 .. 'M'
+        return math.floor(number / 10^5 + 0.5) / 10 .. 'G'
     else
         return number .. 'K'
     end
