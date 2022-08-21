@@ -5,8 +5,6 @@ local gstr      = require('gears.string')
 local gio       = require('lgi').Gio
 local wibox     = require('wibox')
 local beautiful = require('beautiful')
-local math      = { floor = math.floor }
-local tonumber  = tonumber
 
 local total_prev_cpu = {}
 local idle_prev_cpu = {}
