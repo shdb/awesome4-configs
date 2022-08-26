@@ -6,14 +6,18 @@ local naughty   = require('naughty')
 local beautiful = require('beautiful')
 local math      = require('math')
 
-local enery_full = 0
-local percentage = 0
-local status = ''
-local infotext = nil
-local batteryicon = wibox.widget.imagebox()
+local data = {}
+data['energy_full'] = 0
+data['energy']      = 0
+data['power']       = 0
+data['status']      = ''
+local percentage    = 0
+local infotext      = nil
+local sysfspath     = '/sys/class/power_supply/BAT0/'
+local batteryicon   = wibox.widget.imagebox()
 
 local function have_battery()
-   local f = io.open('/sys/class/power_supply/BAT0/energy_now', 'r')
+   local f = io.open(sysfspath .. 'energy_now', 'r')
    if f ~= nil then
        io.close(f)
        return true
@@ -22,12 +26,21 @@ local function have_battery()
    end
 end
 
-local function update(wdg)
-    gio.File.new_for_path('/sys/class/power_supply/BAT0/energy_now'):load_contents_async(nil,function(file,task,c)
+local function get_file_content(file, var)
+    gio.File.new_for_path(file):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
         if content then
-            local charge = string.gsub(content, "\n$", "")
-            percentage = math.floor(charge / enery_full * 100)
+            data[var] = string.gsub(content, '\n$', '')
+        end
+    end)
+end
+
+local function update(wdg)
+    gio.File.new_for_path(sysfspath .. 'energy_now'):load_contents_async(nil,function(file,task,c)
+        local content = file:load_contents_finish(task)
+        if content then
+            local charge = string.gsub(content, '\n$', '')
+            percentage = math.floor(charge / data['energy_full'] * 100)
             wdg:set_value(percentage)
             if percentage >= 30 then
                 wdg:set_color(beautiful.fg_normal)
@@ -41,26 +54,38 @@ local function update(wdg)
             end
         end
     end)
-    gio.File.new_for_path('/sys/class/power_supply/BAT0/status'):load_contents_async(nil,function(file,task,c)
-        local content = file:load_contents_finish(task)
-        if content then
-            status = string.gsub(content, "\n$", "")
-        end
-    end)
+
+    get_file_content(sysfspath .. 'power_now',  'power')
+    get_file_content(sysfspath .. 'energy_now', 'energy')
+    get_file_content(sysfspath .. 'status',     'status')
 end
 
-local function get_full()
-    gio.File.new_for_path('/sys/class/power_supply/BAT0/energy_full'):load_contents_async(nil,function(file,task,c)
-        local content = file:load_contents_finish(task)
-        if content then
-            enery_full = string.gsub(content, "\n$", "")
-        end
-    end)
-end
+local function add_info()
+    local remaining_text = ''
+    local remaining = 0
 
-local function add_infotext()
+    if data['status'] == 'Discharging' then
+        remaining = (data['energy'] * 3600) / data['power'] / 60
+    elseif data['status'] == 'Charging' then
+        remaining = 3600 * (data['energy_full'] - data['energy']) / data['power'] / 60
+    end
+
+    if remaining ~= 0 then
+        local hours
+        local minutes
+        remaining_text = '\nremaining: '
+        if remaining > 60 then
+            hours = math.floor(remaining / 60)
+            minutes = string.format('%02d', math.floor(remaining % 60 + 0.5))
+            remaining_text = remaining_text  .. shiny.fg(beautiful.highlight, hours .. ':' .. minutes)
+        else
+            minutes = string.format('%02d', math.floor(remaining + 0.5))
+            remaining_text = remaining_text .. shiny.fg(beautiful.highlight, minutes)
+        end
+    end
+
     infotext = naughty.notify {
-        text = tostring(percentage) .. '% ' .. status,
+        text = data['status'] .. ': ' .. shiny.fg(beautiful.highlight, tostring(percentage) .. '%') .. remaining_text,
         timeout = 0,
         hover_timeout = 0.5,
         screen = awful.screen.focused(),
@@ -78,7 +103,7 @@ local function new(args)
         return {layout = wibox.layout.fixed.horizontal, openbox}
     end
 
-    get_full()
+    get_file_content(sysfspath .. 'energy_full', 'energy_full')
     local vbar = wibox.widget.progressbar()
     local bar = wibox.widget {
         {
@@ -91,15 +116,15 @@ local function new(args)
             max_value        = 100,
             widget           = vbar,
         },
-        forced_width     = 4,
-        direction        = 'east',
-        layout           = wibox.container.rotate,
+        forced_width = 4,
+        direction    = 'east',
+        layout       = wibox.container.rotate,
     }
 
     batteryicon:set_image(beautiful.battery)
 
-    openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
-    closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
+    openbox:set_markup( shiny.fg(beautiful.highlight, '[ '))
+    closebox:set_markup(shiny.fg(beautiful.highlight, ' ]'))
 
     gears.timer {
         autostart = true,
@@ -109,14 +134,11 @@ local function new(args)
         end
     }
 
-    batteryicon:connect_signal("mouse::enter", function() add_infotext(0) end)
-    batteryicon:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
-    bar:connect_signal("mouse::enter", function() add_infotext(0) end)
-    bar:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
-    openbox:connect_signal("mouse::enter", function() add_infotext(0) end)
-    openbox:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
-    closebox:connect_signal("mouse::enter", function() add_infotext(0) end)
-    closebox:connect_signal("mouse::leave", function() shiny.remove_notify(infotext) end)
+    boxes = {batteryicon, bar, openbox, closebox}
+    for boxCount = 1, #boxes do
+        boxes[boxCount]:connect_signal('mouse::enter', function() add_info() end)
+        boxes[boxCount]:connect_signal('mouse::leave', function() shiny.remove_notify(infotext) end)
+    end
 
     update(vbar)
 
