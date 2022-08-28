@@ -33,45 +33,39 @@ volume = {}
 volume.mt = {}
 
 function volume.update(sleeptime)
-    cmd = 'pulsemixer --get-volume'
+    cmd = 'wpctl get-volume @DEFAULT_AUDIO_SINK@'
     if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
     awful.spawn.easy_async_with_shell(cmd, function(stat)
-        local volume = stat:match("(%d?%d?%d) ")
+        local volume = stat:match("(%d.%d%d)")
         if volume then
-            local volume = tonumber(volume)
+            local volume = tonumber(volume) * 100
             vbar:set_value(volume)
         end
-    end)
 
-    cmd = 'pulsemixer --get-mute'
-    if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
-    awful.spawn.easy_async_with_shell(cmd, function(stat)
-        local state  = stat:match("(%d)")
-        if state then
-            if state == '1' then
-                statusicon:set_image(beautiful.muted)
-            else
-                statusicon:set_image(beautiful.volume)
-            end
+        local mute = stat:match("(MUTED)")
+        if mute and mute == 'MUTED' then
+            statusicon:set_image(beautiful.muted)
+        else
+            statusicon:set_image(beautiful.volume)
         end
     end)
 end
 
 function volume.up(amount)
-    amount = amount or 2
-    awful.spawn('pulsemixer --change-volume +' .. amount)
-    volume.update(0.5)
+    amount = amount and amount / 100 or 0.02
+    awful.spawn('wpctl set-volume @DEFAULT_AUDIO_SINK@ ' .. amount .. '+')
+    volume.update(0.2)
 end
 
 function volume.down(amount)
-    amount = amount or 2
-    awful.spawn('pulsemixer --change-volume -' .. amount)
-    volume.update(0.5)
+    amount = amount and amount / 100 or 0.02
+    awful.spawn('wpctl set-volume @DEFAULT_AUDIO_SINK@ ' .. amount .. '-')
+    volume.update(0.2)
 end
 
 function volume.toggle()
-    awful.spawn('pulsemixer --toggle-mute')
-    volume.update(0.5)
+    awful.spawn('wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle')
+    volume.update(0.2)
 end
 
 function volume.new(o)
