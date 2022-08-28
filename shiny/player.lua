@@ -17,12 +17,14 @@ player.position = ''
 player.separatortime = shiny.fg(beautiful.highlight, ' / ')
 player.separatorartist = shiny.fg(beautiful.highlight, ' / ')
 player.separatorposition = shiny.fg(beautiful.highlight, ' | ')
+player.space = ' '
 
 local sleeptime = 0.2
 
 
 function player.formattime(time)
     time = tonumber(time)
+    if not time then return '' end
 
     local hours = math.floor(time / 60^2)
     local minutes = string.format('%02d', math.floor(time % 60^2 / 60))
@@ -36,18 +38,21 @@ function player.formattime(time)
 end
 
 function player.escape(str)
-	str = string.gsub(str, "&", "&amp;")
-	str = string.gsub(str, "<", "&lt;")
-	str = string.gsub(str, ">", "&gt;")
-	str = string.gsub(str, "'", "&apos;")
-	str = string.gsub(str, '"', "&quot;")
+	str = string.gsub(str, '&', '&amp;')
+	str = string.gsub(str, '<', '&lt;')
+	str = string.gsub(str, '>', '&gt;')
+	str = string.gsub(str, "'", '&apos;')
+	str = string.gsub(str, '"', '&quot;')
 
 	return str
 end
 
 function player.updateinfo()
     player.separatorartist = (player.artist == '' or player.title == '') and '' or shiny.fg(beautiful.highlight, ' / ')
-    player.textbox:set_markup(' ' .. player.escape(player.artist) .. player.separatorartist .. player.escape(player.title) .. shiny.fg(beautiful.highlight, ' | ')
+    player.separatortime = (player.length == '' or player.position == '') and '' or shiny.fg(beautiful.highlight, ' / ')
+    player.separatorposition = (player.length == '' or player.position == '') and '' or shiny.fg(beautiful.highlight, ' | ')
+    player.space = (player.length == '' and player.position == '' and player.artist == '' and player.title == '') and '' or ' '
+    player.textbox:set_markup(player.space .. player.escape(player.artist) .. player.separatorartist .. player.escape(player.title) .. player.separatorposition
         .. player.formattime(player.position) .. player.separatortime .. player.formattime(player.length))
 end
 
@@ -70,6 +75,9 @@ function player.update(sleeptime)
     if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
     awful.spawn.easy_async_with_shell(cmd, function(stat)
         if stat == nil or stat == '' then
+            player.artist = ''
+            player.title = ''
+            player.length = ''
             return player.textbox:set_markup('')
         else
             local artist = stat:match('artist%s+([^\n]+)\n') or ''
@@ -77,7 +85,7 @@ function player.update(sleeptime)
             player.artist = artist:gsub('%s+\n', '')
             player.title  = stat:match('title%s+([^\n]+)\n') or ''
             local length = stat:match('length%s+([^\n]+)\n') or ''
-            if length then player.length = tonumber(length) / 10^6 end
+            if length ~= nil then player.length = tonumber(length) / 10^6 end
         end
         player.updateinfo()
     end)
