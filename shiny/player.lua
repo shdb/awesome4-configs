@@ -4,14 +4,52 @@ local wibox     = require("wibox")
 local naughty   = require("naughty")
 local awful     = require("awful")
 local beautiful = require("beautiful")
+local math      = require('math')
 
 player = {}
 player.mt = {}
 player.statusicon = wibox.widget.imagebox()
 player.textbox = wibox.widget.textbox()
+player.artist = ''
+player.title = ''
+player.length = ''
+player.position = ''
+player.separatortime = shiny.fg(beautiful.highlight, ' / ')
+player.separatorartist = shiny.fg(beautiful.highlight, ' / ')
+player.separatorposition = shiny.fg(beautiful.highlight, ' | ')
 
 local sleeptime = 0.2
 
+
+function player.formattime(time)
+    time = tonumber(time)
+
+    local hours = math.floor(time / 60^2)
+    local minutes = string.format('%02d', math.floor(time % 60^2 / 60))
+    local seconds = string.format('%02d', math.floor(time % 60 + 0.5))
+
+    if hours > 0 then
+        return hours .. ':' .. minutes .. ':' .. seconds
+    else
+        return minutes .. ':' .. seconds
+    end
+end
+
+function player.escape(str)
+	str = string.gsub(str, "&", "&amp;")
+	str = string.gsub(str, "<", "&lt;")
+	str = string.gsub(str, ">", "&gt;")
+	str = string.gsub(str, "'", "&apos;")
+	str = string.gsub(str, '"', "&quot;")
+
+	return str
+end
+
+function player.updateinfo()
+    player.separatorartist = (player.artist == '' or player.title == '') and '' or shiny.fg(beautiful.highlight, ' / ')
+    player.textbox:set_markup(' ' .. player.escape(player.artist) .. player.separatorartist .. player.escape(player.title) .. shiny.fg(beautiful.highlight, ' | ')
+        .. player.formattime(player.position) .. player.separatortime .. player.formattime(player.length))
+end
 
 function player.update(sleeptime)
     cmd = 'playerctl status'
@@ -32,17 +70,25 @@ function player.update(sleeptime)
     if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
     awful.spawn.easy_async_with_shell(cmd, function(stat)
         if stat == nil or stat == '' then
-            player.textbox:set_markup('')
+            return player.textbox:set_markup('')
         else
-            --local lines = gears.string.split(stat, "\n")
             local artist = stat:match('artist%s+([^\n]+)\n') or ''
-            local title  = stat:match('title%s+([^\n]+)\n') or ''
             artist = artist:gsub('-%sTopic\n', '')
-            artist = artist:gsub('%s+\n', '')
-            local separator = (artist == '' or title == '') and '' or shiny.fg(beautiful.highlight, ' / ')
-            player.textbox:set_markup(' ' .. artist .. separator .. title)
+            player.artist = artist:gsub('%s+\n', '')
+            player.title  = stat:match('title%s+([^\n]+)\n') or ''
+            local length = stat:match('length%s+([^\n]+)\n') or ''
+            if length then player.length = tonumber(length) / 10^6 end
         end
+        player.updateinfo()
     end)
+
+    cmd = 'playerctl position'
+    if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
+    awful.spawn.easy_async_with_shell(cmd, function(stat)
+        player.position = stat:match('([^\n]+)\n') or ''
+        player.updateinfo()
+    end)
+
 end
 
 function player.playpause()
@@ -109,7 +155,7 @@ function player.new(o)
 
     gears.timer {
         autostart = true,
-        timeout   = 5,
+        timeout   = 1,
         callback  = function()
             o.update()
         end
