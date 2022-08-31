@@ -24,7 +24,7 @@ local sleeptime = 0.2
 
 function player.formattime(time)
     time = tonumber(time)
-    if not time then return '' end
+    if not time or time == 0 then return '' end
 
     local hours = math.floor(time / 60^2)
     local minutes = string.format('%02d', math.floor(time % 60^2 / 60))
@@ -56,22 +56,20 @@ function player.updateinfo()
         .. player.formattime(player.position) .. player.separatortime .. player.formattime(player.length))
 end
 
-function player.update(sleeptime)
-    cmd = 'playerctl status'
-    if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
-    awful.spawn.easy_async_with_shell(cmd, function(stat)
-        if stat == nil or stat == '' then
-            player.statusicon:set_image(beautiful.player_stop)
-        elseif stat:match('Paused') then
-            player.statusicon:set_image(beautiful.player_pause)
-        elseif stat:match('Playing') then
-            player.statusicon:set_image(beautiful.player_play)
-        else
-            player.statusicon:set_image(beautiful.player_stop)
-        end
-    end)
+function player.updatestatus(stat)
+    if stat == nil or stat == '' then
+        player.statusicon:set_image(beautiful.player_stop)
+    elseif stat:match('Paused') then
+        player.statusicon:set_image(beautiful.player_pause)
+    elseif stat:match('Playing') then
+        player.statusicon:set_image(beautiful.player_play)
+    else
+        player.statusicon:set_image(beautiful.player_stop)
+    end
+end
 
-    cmd = 'playerctl metadata'
+function player.update(sleeptime)
+    cmd = 'playerctl metadata -f "__status:{{status}} __artist:{{artist}} __title:{{title}} __position:{{position}} __length:{{mpris:length}}"'
     if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
     awful.spawn.easy_async_with_shell(cmd, function(stat)
         if stat == nil or stat == '' then
@@ -80,23 +78,31 @@ function player.update(sleeptime)
             player.length = ''
             return player.textbox:set_markup('')
         else
-            local artist = stat:match('artist%s+([^\n]+)\n') or ''
-            artist = artist:gsub('-%sTopic\n', '')
-            player.artist = artist:gsub('%s+\n', '')
-            player.title  = stat:match('title%s+([^\n]+)\n') or ''
-            local length = stat:match('length%s+([^\n]+)\n') or ''
-            if length ~= nil then player.length = tonumber(length) / 10^6 end
+            local status = stat:match('__status:(.+) __artist') or ''
+            player.updatestatus(status)
+
+            local artist = stat:match('.*__artist:(.+) __title') or ''
+            artist = artist:gsub('-%sTopic$', '')
+            player.artist = artist:gsub('%s+$', '')
+
+            player.title  = stat:match('__title:(.+) __position') or ''
+
+            local position = stat:match('__position:(.+) __length') or ''
+            if tonumber(position) and tonumber(position) > 1000 then
+                player.position = tonumber(position) / 10^6
+            else
+                player.position = ''
+            end
+
+            local length = stat:match('__length:(.+)$') or ''
+            if tonumber(length) and tonumber(length) > 1000 then
+                player.length = tonumber(length) / 10^6
+            else
+                player.length = ''
+            end
         end
         player.updateinfo()
     end)
-
-    cmd = 'playerctl position'
-    if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
-    awful.spawn.easy_async_with_shell(cmd, function(stat)
-        player.position = stat:match('([^\n]+)\n') or ''
-        player.updateinfo()
-    end)
-
 end
 
 function player.playpause()
