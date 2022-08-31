@@ -72,10 +72,11 @@ function player.update(sleeptime)
     cmd = 'playerctl metadata -f "__status:{{status}} __artist:{{artist}} __title:{{title}} __position:{{position}} __length:{{mpris:length}}"'
     if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
     awful.spawn.easy_async_with_shell(cmd, function(stat)
-        if stat == nil or stat == '' then
+        if stat == nil or stat == '' or stat == 'No players found' then
             player.artist = ''
             player.title = ''
             player.length = ''
+            player.updatestatus()
             return player.textbox:set_markup('')
         else
             local status = stat:match('__status:(.+) __artist') or ''
