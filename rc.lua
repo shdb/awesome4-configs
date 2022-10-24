@@ -416,25 +416,30 @@ globalkeys = gears.table.join(
     awful.key({}, "XF86MonBrightnessUp",   function() brightness.adjust( 5) end),
 
     awful.key({modkey, shift, ctrl}, 0,
-    function()
-        local c = client.focus
-        local ison = false
-        local scr = mouse.screen or 1
+        function()
+            local c = client.focus
+            local scr = mouse.screen or 1
 
-        for _, t in pairs(awful.tag.gettags(scr)) do
-            ison = false
+            for _, t in pairs(awful.tag.gettags(scr)) do
+                local ison = false
+                local clientcount = 0
 
-            for _, m in pairs(c:tags()) do
-                if t == m then ison = true end
-            end
+                for _ in pairs(t:clients()) do
+                    clientcount = clientcount + 1
+                end
 
-            if not ison then
-                awful.client.toggletag(t)
+                for _, m in pairs(c:tags()) do
+                    if t == m then ison = true end
+                end
+
+                if not ison and clientcount > 0 then
+                    awful.client.toggletag(t)
+                end
+                client.focus = c
             end
             client.focus = c
-        end
-        client.focus = c
-    end)
+        end,
+        {description = "put the client on all tags with clients", group = "tag"})
 )
 
 clientkeys = gears.table.join(
@@ -444,15 +449,15 @@ clientkeys = gears.table.join(
             c:raise()
         end,
         {description = "toggle fullscreen", group = "client"}),
-    awful.key({modkey}, "c",      function (c) c:kill()                         end,
+    awful.key({modkey}, "c", function (c) c:kill() end,
               {description = "close", group = "client"}),
-    awful.key({modkey, ctrl}, "space",  awful.client.floating.toggle                     ,
+    awful.key({modkey, ctrl}, "space",  awful.client.floating.toggle,
               {description = "toggle floating", group = "client"}),
     awful.key({modkey, ctrl}, "Return", function (c) c:swap(awful.client.getmaster()) end,
               {description = "move to master", group = "client"}),
-    awful.key({modkey}, "o",      function (c) c:move_to_screen()               end,
+    awful.key({modkey}, "o", function (c) c:move_to_screen() end,
               {description = "move to screen", group = "client"}),
-    awful.key({modkey}, "t",      function (c) c.ontop = not c.ontop            end,
+    awful.key({modkey}, "t", function (c) c.ontop = not c.ontop end,
               {description = "toggle keep on top", group = "client"}),
 --    awful.key({modkey, alt, ctrl}, "k", function() keyboard.toggle() end,
 --              {description = "toggle keyboard layout", group = "screen"}),
