@@ -104,7 +104,7 @@ function toggle(prog, displacement, vert, horiz, width, height, sticky, screen)
             if sticky then c.sticky = true end
             if c.titlebar then awful.titlebar.remove(c) end
 
-            awful.client.movetotag(awful.tag.selected(screen), c)
+            c:move_to_tag(awful.tag.selected(screen))
             c:raise()
             capi.client.focus = c
         end
@@ -119,7 +119,7 @@ function toggle(prog, displacement, vert, horiz, width, height, sticky, screen)
         -- Switch the client to the current workspace
         if c:isvisible() == false then
             c.hidden = true;
-            awful.client.movetotag(awful.tag.selected(screen), c)
+            c:move_to_tag(awful.tag.selected(screen))
         end
 
         -- Focus and raise if hidden
