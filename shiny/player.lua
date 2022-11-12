@@ -38,13 +38,13 @@ function player.formattime(time)
 end
 
 function player.escape(str)
-	str = string.gsub(str, '&', '&amp;')
-	str = string.gsub(str, '<', '&lt;')
-	str = string.gsub(str, '>', '&gt;')
-	str = string.gsub(str, "'", '&apos;')
-	str = string.gsub(str, '"', '&quot;')
+    str = string.gsub(str, '&', '&amp;')
+    str = string.gsub(str, '<', '&lt;')
+    str = string.gsub(str, '>', '&gt;')
+    str = string.gsub(str, "'", '&apos;')
+    str = string.gsub(str, '"', '&quot;')
 
-	return str
+    return str
 end
 
 function player.updateinfo()

@@ -43,7 +43,7 @@ local dropdown = {}
 -- Create a new window for the drop-down application when it doesn't
 -- exist, or toggle between hidden and visible states when it does
 function toggle(prog, displacement, vert, horiz, width, height, sticky, screen)
-	local displacement = displacement or 0
+    local displacement = displacement or 0
     local vert         = vert         or "top"     -- top, bottom or center
     local horiz        = horiz        or "center"  -- left, right or center
     local width        = width        or 1
@@ -79,7 +79,7 @@ function toggle(prog, displacement, vert, horiz, width, height, sticky, screen)
             dropdown[prog][screen] = c
 
             -- Teardrop clients are floaters
-			c.floating = true
+            c.floating = true
             c.border_width = beautiful.border_width
 
             -- Client geometry and placement
