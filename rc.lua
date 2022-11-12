@@ -433,7 +433,9 @@ globalkeys = gears.table.join(
                 end
 
                 if not ison and clientcount > 0 then
-                    awful.client.toggletag(t)
+                    c:toggle_tag(t)  -- put it on a tag with other clients
+                elseif ison and clientcount == 1 then
+                    c:toggle_tag(t)  -- remove it from a tag with no other clients
                 end
                 client.focus = c
             end
