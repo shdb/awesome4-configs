@@ -36,28 +36,22 @@ local function get_file_content(file, var)
 end
 
 local function update(wdg)
-    gio.File.new_for_path(sysfspath .. 'energy_now'):load_contents_async(nil,function(file,task,c)
-        local content = file:load_contents_finish(task)
-        if content then
-            local charge = string.gsub(content, '\n$', '')
-            percentage = math.floor(charge / data['energy_full'] * 100)
-            wdg:set_value(percentage)
-            if percentage >= 30 then
-                wdg:set_color(beautiful.fg_normal)
-                batteryicon:set_image(beautiful.battery)
-            elseif percentage < 15 then
-                wdg:set_color(beautiful.fc_urgent)
-                batteryicon:set_image(beautiful.battery_red)
-            elseif percentage < 30 then
-                wdg:set_color(beautiful.highlight)
-                batteryicon:set_image(beautiful.battery_yellow)
-            end
-        end
-    end)
-
     get_file_content(sysfspath .. 'power_now',  'power')
     get_file_content(sysfspath .. 'energy_now', 'energy')
     get_file_content(sysfspath .. 'status',     'status')
+
+    percentage = math.floor(data['energy'] / data['energy_full'] * 100)
+    wdg:set_value(percentage)
+    if percentage >= 30 then
+        wdg:set_color(beautiful.fg_normal)
+        batteryicon:set_image(beautiful.battery)
+    elseif percentage < 15 then
+        wdg:set_color(beautiful.fc_urgent)
+        batteryicon:set_image(beautiful.battery_red)
+    elseif percentage < 30 then
+        wdg:set_color(beautiful.highlight)
+        batteryicon:set_image(beautiful.battery_yellow)
+    end
 end
 
 local function add_info()
