@@ -35,7 +35,6 @@ local function add_info(args)
         screen = awful.screen.focused(),
         icon = beautiful.mem,
     }
-
 end
 
 local function new(args)
@@ -43,13 +42,17 @@ local function new(args)
     local vbar = wibox.widget.progressbar()
     local bar = wibox.widget {
         {
-            --color            = beautiful.fg_normal,
-            color            = { type="linear", from = {0, 0}, to = {10, 0},
-                                 stops = { {0, beautiful.fg_normal},
-                                           {0.5, beautiful.graph_center},
-                                           {1.0, beautiful.graph_end}
-                                 }
-                               },
+            --color = beautiful.fg_normal,
+            color = {
+                type = "linear",
+                from = { 0, 0 },
+                to   = { 10, 0 },
+                stops = {
+                    { 0,   beautiful.fg_normal },
+                    { 0.5, beautiful.graph_center },
+                    { 1.0, beautiful.graph_end }
+                }
+            },
             border_color     = beautiful.bg_normal,
             background_color = beautiful.graph_bg,
             ticks            = true,
@@ -58,9 +61,9 @@ local function new(args)
             max_value        = 100,
             widget           = vbar,
         },
-        forced_width     = 4,
-        direction        = 'east',
-        layout           = wibox.container.rotate,
+        forced_width = 4,
+        direction    = 'east',
+        layout       = wibox.container.rotate,
     }
 
     local memicon = wibox.widget.imagebox()
