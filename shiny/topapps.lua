@@ -1,24 +1,17 @@
 -- apps like mplayer should always be ontop
 -- mplayer looses the ontop flag when changing from fullscreen to windowed mode.
 
-local awful     = require("awful")
-local beautiful = require("beautiful")
-local shiny     = require("shiny")
-
 local pairs, screen, mouse, client
     = pairs, screen, mouse, client
 
 -- keeps apps on top
-topapps = {}
-
-
 topapps = {
-        ["Gkrellm"]  = true,
-        ["MPlayer"]  = true,
-        ["mplayer2"] = true,
-        ["mpv"]      = true,
-        ["Toolkit"]  = true,
-    }
+    ["Gkrellm"]  = true,
+    ["MPlayer"]  = true,
+    ["mplayer2"] = true,
+    ["mpv"]      = true,
+    ["Toolkit"]  = true,
+}
 
 local function update(c)
     local lscreen = c and c.screen or mouse.screen
