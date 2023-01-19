@@ -58,7 +58,9 @@ local function add_info()
     local remaining_text = ''
     local remaining = 0
 
-    if data['status'] == 'Discharging' then
+    if tonumber(data['power']) == 0 then
+        remaining = 0
+    elseif data['status'] == 'Discharging' then
         remaining = (data['energy'] * 3600) / data['power'] / 60
     elseif data['status'] == 'Charging' then
         remaining = 3600 * (data['energy_full'] - data['energy']) / data['power'] / 60
