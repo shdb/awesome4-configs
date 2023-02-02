@@ -8,24 +8,24 @@ local wibox = require("wibox")
 local beautiful = require("beautiful")
 beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/shdb/theme.lua")
 -- Notification library
-local naughty       = require("naughty")
-local menubar       = require("menubar")
-local hotkeys_popup = require("awful.hotkeys_popup").widget
-local xrandr        = require("xrandr")
-local shiny         = require("shiny")
-local player        = require("shiny.player")()
-local volume        = require("shiny.volume")()
-local cpuwidget     = require("shiny.cpu")()
-local memwidget     = require("shiny.mem")()
-local batterywdget  = require("shiny.battery")()
-local brightness    = require("shiny.brightness")()
-local lanwidget     = require("shiny.lan")()
--- local keyboard      = require("shiny.keyboard")()
-local textclock     = require("shiny.textclock")()
-local binclock      = require("shiny.binclock")()
-local sscreen       = require("shiny.screen")
-local topapps       = require("shiny.topapps")
-local teardrop      = require("teardrop")
+local naughty         = require("naughty")
+local menubar         = require("menubar")
+local hotkeys_popup   = require("awful.hotkeys_popup").widget
+local xrandr          = require("xrandr")
+local shiny           = require("shiny")
+local player          = require("shiny.player")()
+local volume          = require("shiny.volume")()
+local cpuwidget       = require("shiny.cpu")()
+local memwidget       = require("shiny.mem")()
+local batterywdget    = require("shiny.battery")()
+local brightness      = require("shiny.brightness")()
+local lanwidget       = require("shiny.lan")()
+local textclock       = require("shiny.textclock")()
+local binclock        = require("shiny.binclock")()
+local sscreen         = require("shiny.screen")
+local topapps         = require("shiny.topapps")
+local keepaspectratio = require("shiny.keepaspectratio")
+local teardrop        = require("teardrop")
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
@@ -398,15 +398,15 @@ globalkeys = gears.table.join(
     awful.key({ctrl, alt}, "j",           function() volume.down() end),
     awful.key({}, "XF86AudioMute",        function() volume.toggle() end),
     awful.key({ctrl, alt}, "m",           function() volume.toggle() end),
-    awful.key({}, "XF86AudioPlay",        function() player.playpause() end),
-    awful.key({}, "XF86AudioNext",        function() player.next() end),
-    awful.key({}, "XF86AudioPrev",        function() player.previous() end),
-    awful.key({ctrl, alt}, "space",       function() player.playpause() end),
-    awful.key({ctrl, alt}, "l",           function() player.next() end),
-    awful.key({ctrl, alt}, "h",           function() player.previous() end),
-    awful.key({modkey, ctrl, alt}, "k",   function() player.seekfw() end),
-    awful.key({modkey, ctrl, alt}, "j",   function() player.seekbw() end),
-    awful.key({modkey, ctrl, alt}, "l",   function() player.pause(); awful.spawn.with_shell("i3lock -c 000000 &") end,
+    awful.key({}, "XF86AudioPlay",        function() player:playpause() end),
+    awful.key({}, "XF86AudioNext",        function() player:next() end),
+    awful.key({}, "XF86AudioPrev",        function() player:previous() end),
+    awful.key({ctrl, alt}, "space",       function() player:playpause() end),
+    awful.key({ctrl, alt}, "l",           function() player:next() end),
+    awful.key({ctrl, alt}, "h",           function() player:previous() end),
+    awful.key({modkey, ctrl, alt}, "k",   function() player:seekfw() end),
+    awful.key({modkey, ctrl, alt}, "j",   function() player:seekbw() end),
+    awful.key({modkey, ctrl, alt}, "l",   function() player:pause(); awful.spawn.with_shell("i3lock -c 000000 &") end,
         {description = "lock the screen", group = "screen"}),
     awful.key({modkey, ctrl, alt}, "s", function() awful.spawn.with_shell("systemctl suspend-then-hibernate") end,
         {description = "suspend the machine", group = "screen"}),

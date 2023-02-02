@@ -1,3 +1,4 @@
+local lgi       = require("lgi")
 local gears     = require('gears')
 local shiny     = require("shiny")
 local wibox     = require("wibox")
@@ -6,23 +7,10 @@ local awful     = require("awful")
 local beautiful = require("beautiful")
 local math      = require('math')
 
-player = {}
-player.mt = {}
-player.statusicon = wibox.widget.imagebox()
-player.textbox = wibox.widget.textbox()
-player.artist = ''
-player.title = ''
-player.length = ''
-player.position = ''
-player.separatortime = shiny.fg(beautiful.highlight, ' / ')
-player.separatorartist = shiny.fg(beautiful.highlight, ' / ')
-player.separatorposition = shiny.fg(beautiful.highlight, ' | ')
-player.space = ' '
-
-local sleeptime = 0.2
+player = { mt = {} }
 
 
-function player.formattime(time)
+function player:formattime(time)
     time = tonumber(time)
     if not time or time == 0 then return '' end
 
@@ -37,148 +25,162 @@ function player.formattime(time)
     end
 end
 
-function player.escape(str)
-    str = string.gsub(str, '&', '&amp;')
-    str = string.gsub(str, '<', '&lt;')
-    str = string.gsub(str, '>', '&gt;')
-    str = string.gsub(str, "'", '&apos;')
-    str = string.gsub(str, '"', '&quot;')
+function player:init_player(name)
+    local playerctl = self.Playerctl.Player.new_from_name(name)
+    self.manager:manage_player(playerctl)
+    playerctl.on_metadata = function(playerctl, metadata)
+        self:update(playerctl)
+    end
 
-    return str
-end
+    playerctl.on_playback_status = function(playerctl, playback_status)
+        self:update(playerctl)
+        self.active = playerctl
+    end
 
-function player.updateinfo()
-    player.separatorartist = (player.artist == '' or player.title == '') and '' or shiny.fg(beautiful.highlight, ' / ')
-    player.separatortime = (player.length == '' or player.position == '') and '' or shiny.fg(beautiful.highlight, ' / ')
-    player.separatorposition = (player.length == '' or player.position == '') and '' or shiny.fg(beautiful.highlight, ' | ')
-    player.space = (player.length == '' and player.position == '' and player.artist == '' and player.title == '') and '' or ' '
-    player.textbox:set_markup(player.space .. player.escape(player.artist) .. player.separatorartist .. player.escape(player.title) .. player.separatorposition
-        .. player.formattime(player.position) .. player.separatortime .. player.formattime(player.length))
-end
+    playerctl.on_seeked = function(playerctl, position)
+        self:update(playerctl)
+        self.active = playerctl
+    end
 
-function player.updatestatus(stat)
-    if stat == nil or stat == '' then
-        player.statusicon:set_image(beautiful.player_stop)
-    elseif stat:match('Paused') then
-        player.statusicon:set_image(beautiful.player_pause)
-    elseif stat:match('Playing') then
-        player.statusicon:set_image(beautiful.player_play)
-    else
-        player.statusicon:set_image(beautiful.player_stop)
+    playerctl.on_exit = function(playerctl)
+        self.textbox:set_markup('')
+        self.active = nil
     end
 end
 
-function player.update(sleeptime)
-    cmd = 'playerctl metadata -f "__status:{{status}} __artist:{{artist}} __title:{{title}} __position:{{position}} __length:{{mpris:length}}"'
-    if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
-    awful.spawn.easy_async_with_shell(cmd, function(stat)
-        if stat == nil or stat == '' or stat == 'No players found' then
-            player.artist = ''
-            player.title = ''
-            player.length = ''
-            player.updatestatus()
-            return player.textbox:set_markup('')
+function player:update(playerctl)
+    if not playerctl then
+        if not (self.active or self.manager.players[1]) then
+            self.textbox:set_markup()
+            return
         else
-            local status = stat:match('__status:(.+) __artist') or ''
-            player.updatestatus(status)
-
-            local artist = stat:match('.*__artist:(.+) __title') or ''
-            artist = artist:gsub('-%sTopic$', '')
-            player.artist = artist:gsub('%s+$', '')
-
-            player.title  = stat:match('__title:(.+) __position') or ''
-
-            local position = stat:match('__position:(.+) __length') or ''
-            if tonumber(position) and tonumber(position) > 1000 then
-                player.position = tonumber(position) / 10^6
-            else
-                player.position = ''
-            end
-
-            local length = stat:match('__length:(.+)$') or ''
-            if tonumber(length) and tonumber(length) > 1000 then
-                player.length = tonumber(length) / 10^6
-            else
-                player.length = ''
-            end
+            playerctl = self.active or self.manager.players[1]
         end
-        player.updateinfo()
-    end)
+    end
+
+    local status = playerctl.playback_status
+    local artist = playerctl:get_artist() or ''
+    local title = playerctl:get_title() or ''
+    local position = (playerctl:get_position() or 0) / 10^6
+    local length = (playerctl.metadata.value["mpris:length"] or 0) / 10^6
+
+    local separatorartist = (artist == '' or title == '') and '' or shiny.fg(beautiful.highlight, ' / ')
+    local separatortime = (length == 0 or position == 0) and '' or shiny.fg(beautiful.highlight, ' / ')
+    local separatorposition = (length == 0 or position == 0) and '' or shiny.fg(beautiful.highlight, ' | ')
+    local space = (length == 0 and position == 0 and artist == '' and title == '') and '' or ' '
+
+    if status == nil or status == '' then
+        self.statusicon:set_image(beautiful.player_stop)
+    elseif status == 'PAUSED' then
+        self.statusicon:set_image(beautiful.player_pause)
+    elseif status == 'PLAYING' then
+        self.statusicon:set_image(beautiful.player_play)
+    else
+        self.statusicon:set_image(beautiful.player_stop)
+    end
+
+    self.textbox:set_markup(space .. gears.string.xml_escape(artist) .. separatorartist .. gears.string.xml_escape(title) .. separatorposition
+        .. self:formattime(position) .. separatortime .. self:formattime(length))
 end
 
-function player.playpause()
-    awful.spawn('playerctl play-pause')
-    player.update(sleeptime)
+function player:playpause(playerctl)
+    playerctl = playerctl or self.active or self.manager.players[1]
+    if not playerctl then return end
+    playerctl:play_pause()
 end
 
-function player.play()
-    awful.spawn('playerctl play')
-    player.update(sleeptime)
+function player:play(playerctl)
+    playerctl = playerctl or self.active or self.manager.players[1]
+    if not playerctl then return end
+    playerctl:play()
 end
 
-function player.pause()
-    awful.spawn('playerctl pause')
-    player.update(sleeptime)
+function player:pause(playerctl)
+    playerctl = playerctl or self.active or self.manager.players[1]
+    if not playerctl then return end
+    playerctl:pause()
 end
 
-function player.next()
-    awful.spawn('playerctl next')
-    player.update(sleeptime)
+function player:next(playerctl)
+    playerctl = playerctl or self.active or self.manager.players[1]
+    if not playerctl then return end
+    playerctl:next()
 end
 
-function player.previous()
-    awful.spawn('playerctl previous')
-    player.update(sleeptime)
+function player:previous(playerctl)
+    playerctl = playerctl or self.active or self.manager.players[1]
+    if not playerctl then return end
+    playerctl:previous()
 end
 
-function player.seekfw(amount)
+function player:seekfw(amount, playerctl)
     amount = amount or 5
-    awful.spawn('playerctl position ' .. amount .. '+')
-    player.update(sleeptime)
+    playerctl = playerctl or self.active or self.manager.players[1]
+    if not playerctl then return end
+    playerctl:seek(amount * 10^6)
 end
 
-function player.seekbw(amount)
+function player:seekbw(amount, playerctl)
     amount = amount or 5
-    awful.spawn('playerctl position ' .. amount .. '-')
-    player.update(sleeptime)
+    playerctl = playerctl or self.active or self.manager.players[1]
+    if not playerctl then return end
+    playerctl:seek('-' .. amount * 10^6)
 end
 
-function player.stop()
-    awful.spawn('playerctl stop')
-    player.update(sleeptime)
+function player:stop(playerctl)
+    playerctl = playerctl or self.active or self.manager.players[1]
+    if not playerctl then return end
+    playerctl:stop()
 end
 
-function player.new(o)
-    setmetatable(o, player.mt)
-    local openbox  = wibox.widget.textbox()
-    local closebox = wibox.widget.textbox()
-    openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
-    closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
+function player:new()
+    setmetatable(self, self.mt)
+    self.statusicon = wibox.widget.imagebox(beautiful.player_stop)
+    self.textbox = wibox.widget.textbox()
+    self.Playerctl = lgi.Playerctl
+    self.manager = self.Playerctl.PlayerManager()
+    self.active = nil
 
-    local widgetboxes = {openbox, player.textbox, closebox}
-    for i, widgetbox in ipairs(widgetboxes) do
-        widgetbox:buttons(
-            gears.table.join(
-                awful.button({ }, 1, function() player.playpause() end),
-                awful.button({ }, 3, function() player.next() end),
-                awful.button({ }, 2, function() player.previous() end),
-                awful.button({ }, 4, function() player.seekbw(1) end),
-                awful.button({ }, 5, function() player.seekfw(1) end)
-            )
-        )
+    local _self = self
+    -- manage existing players on startup
+    for _, name in ipairs(self.manager.player_names) do
+        _self:init_player(name)
+    end
+
+    -- manage new players
+    function self.manager:on_name_appeared(name)
+        _self:init_player(name)
     end
 
     gears.timer {
         autostart = true,
         timeout   = 1,
         callback  = function()
-            o.update()
+            self:update()
         end
     }
 
-    o.update()
-    o.widget = {layout = wibox.layout.fixed.horizontal, openbox, player.statusicon, player.textbox, closebox}
-    return o
+    local openbox  = wibox.widget.textbox()
+    local closebox = wibox.widget.textbox()
+    openbox:set_markup( shiny.fg(beautiful.highlight, "[ "))
+    closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
+
+    local widgetboxes = {openbox, self.textbox, closebox}
+    for i, widgetbox in ipairs(widgetboxes) do
+        widgetbox:buttons(
+            gears.table.join(
+                awful.button({ }, 1, function() self:playpause() end),
+                awful.button({ }, 3, function() self:next() end),
+                awful.button({ }, 2, function() self:previous() end),
+                awful.button({ }, 4, function() self:seekbw(1) end),
+                awful.button({ }, 5, function() self:seekfw(1) end)
+            )
+        )
+    end
+
+
+    self.widget = {layout = wibox.layout.fixed.horizontal, openbox, self.statusicon, self.textbox, closebox}
+    return self
 end
 
 return setmetatable({}, { __call = function(_, ...) return player:new(...) end })
