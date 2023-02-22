@@ -43,6 +43,7 @@ function playerctl:init_player(name)
     player.on_exit = function(player)
         self.textbox:set_markup('')
         self.active = nil
+        self.players[player] = nil
         gears.timer.delayed_call(function()
             self:init_data()
         end)
@@ -54,14 +55,14 @@ end
 
 function playerctl:metadata_cb(player, metadata)
     local data = metadata.value
-    self.title = data["xesam:title"] or ""
-    self.artist = data["xesam:artist"][1] or ""
-    self.length = (data["mpris:length"] or 0) / 10^6
+    self.players[player].artist = data["xesam:artist"][1] or ""
+    self.players[player].title = data["xesam:title"] or ""
+    self.players[player].length = (data["mpris:length"] or 0) / 10^6
     self:update(player)
 end
 
 function playerctl:status_cb(player, status)
-    self.status = status
+    self.players[player].status = status
     self:update(player, true)
 end
 
@@ -84,10 +85,11 @@ function playerctl:init_data(player)
 
     if not playerctl:player_exists(player) then return end
 
-    self.status = player.playback_status
-    self.artist = player:get_artist() or ''
-    self.title = player:get_title() or ''
-    self.length = (player.metadata.value["mpris:length"] or 0) / 10^6
+    if self.players[player] == nil then self.players[player] = {} end
+    self.players[player].status = player.playback_status
+    self.players[player].artist = player:get_artist() or ''
+    self.players[player].title = player:get_title() or ''
+    self.players[player].length = (player.metadata.value["mpris:length"] or 0) / 10^6
 
     self:update(player)
 end
@@ -96,6 +98,7 @@ function playerctl:update(player, checkactive)
     if checkactive and player and self.active ~= player then
         self.active = player
         self:init_data(player)
+        return
     end
     if not player then
         if not (self.active or self.manager.players[1]) then
@@ -108,24 +111,24 @@ function playerctl:update(player, checkactive)
 
     if not playerctl:player_exists(player) then return end
 
-    local artist = gears.string.xml_escape(self.artist)
-    local title = gears.string.xml_escape(self.title)
+    local artist = gears.string.xml_escape(self.players[player].artist)
+    local title = gears.string.xml_escape(self.players[player].title)
     local position = (player:get_position() or 0) / 10^6
-    if self.length == 0 then
-        self.length = (player.metadata.value["mpris:length"] or 0) / 10^6
+    if self.players[player].length == 0 then
+        self.players[player].length = (player.metadata.value["mpris:length"] or 0) / 10^6
     end
-    local length = self.length
+    local length = self.players[player].length
 
     local separatorartist = (artist == '' or title == '') and '' or shiny.fg(beautiful.highlight, ' / ')
     local separatortime = (length == 0 or position == 0) and '' or shiny.fg(beautiful.highlight, ' / ')
     local separatorposition = (length == 0 or position == 0) and '' or shiny.fg(beautiful.highlight, ' | ')
     local space = (length == 0 and position == 0 and artist == '' and title == '') and '' or ' '
 
-    if self.status == nil or self.status == '' then
+    if self.players[player].status == nil or self.players[player].status == '' then
         self.statusicon:set_image(beautiful.player_stop)
-    elseif self.status == 'PAUSED' then
+    elseif self.players[player].status == 'PAUSED' then
         self.statusicon:set_image(beautiful.player_pause)
-    elseif self.status == 'PLAYING' then
+    elseif self.players[player].status == 'PLAYING' then
         self.statusicon:set_image(beautiful.player_play)
     else
         self.statusicon:set_image(beautiful.player_stop)
@@ -192,10 +195,7 @@ function playerctl:new()
     self.Playerctl = lgi.Playerctl
     self.manager = self.Playerctl.PlayerManager()
     self.active = nil
-    self.artist = ''
-    self.title = ''
-    self.length = 0
-    self.position = 0
+    self.players = {}
 
     local _self = self
     -- manage existing players on startup
