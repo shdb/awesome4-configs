@@ -13,7 +13,7 @@ local menubar         = require("menubar")
 local hotkeys_popup   = require("awful.hotkeys_popup").widget
 local xrandr          = require("xrandr")
 local shiny           = require("shiny")
-local player          = require("shiny.player")()
+local playerctl       = require("shiny.playerctl")()
 local volume          = require("shiny.volume")()
 local cpuwidget       = require("shiny.cpu")()
 local memwidget       = require("shiny.mem")()
@@ -256,7 +256,7 @@ awful.screen.connect_for_each_screen(function(s)
             { -- Right widgets
                 layout = wibox.layout.fixed.horizontal,
                 --mykeyboardlayout,
-                player.widget,
+                playerctl.widget,
                 cpuwidget,
                 memwidget,
                 batterywdget,
@@ -398,15 +398,15 @@ globalkeys = gears.table.join(
     awful.key({ctrl, alt}, "j",           function() volume.down() end),
     awful.key({}, "XF86AudioMute",        function() volume.toggle() end),
     awful.key({ctrl, alt}, "m",           function() volume.toggle() end),
-    awful.key({}, "XF86AudioPlay",        function() player:playpause() end),
-    awful.key({}, "XF86AudioNext",        function() player:next() end),
-    awful.key({}, "XF86AudioPrev",        function() player:previous() end),
-    awful.key({ctrl, alt}, "space",       function() player:playpause() end),
-    awful.key({ctrl, alt}, "l",           function() player:next() end),
-    awful.key({ctrl, alt}, "h",           function() player:previous() end),
-    awful.key({modkey, ctrl, alt}, "k",   function() player:seekfw() end),
-    awful.key({modkey, ctrl, alt}, "j",   function() player:seekbw() end),
-    awful.key({modkey, ctrl, alt}, "l",   function() player:pause(); awful.spawn.with_shell("i3lock -c 000000 &") end,
+    awful.key({}, "XF86AudioPlay",        function() playerctl:playpause() end),
+    awful.key({}, "XF86AudioNext",        function() playerctl:next() end),
+    awful.key({}, "XF86AudioPrev",        function() playerctl:previous() end),
+    awful.key({ctrl, alt}, "space",       function() playerctl:playpause() end),
+    awful.key({ctrl, alt}, "l",           function() playerctl:next() end),
+    awful.key({ctrl, alt}, "h",           function() playerctl:previous() end),
+    awful.key({modkey, ctrl, alt}, "k",   function() playerctl:seekfw() end),
+    awful.key({modkey, ctrl, alt}, "j",   function() playerctl:seekbw() end),
+    awful.key({modkey, ctrl, alt}, "l",   function() playerctl:pause(); awful.spawn.with_shell("i3lock -c 000000 &") end,
         {description = "lock the screen", group = "screen"}),
     awful.key({modkey, ctrl, alt}, "s", function() awful.spawn.with_shell("systemctl suspend-then-hibernate") end,
         {description = "suspend the machine", group = "screen"}),

@@ -7,10 +7,10 @@ local awful     = require("awful")
 local beautiful = require("beautiful")
 local math      = require('math')
 
-player = { mt = {} }
+playerctl = { mt = {} }
 
 
-function player:formattime(time)
+function playerctl:formattime(time)
     time = tonumber(time)
     if not time or time == 0 then return '' end
 
@@ -25,22 +25,22 @@ function player:formattime(time)
     end
 end
 
-function player:init_player(name)
-    local playerctl = self.Playerctl.Player.new_from_name(name)
-    self.manager:manage_player(playerctl)
-    playerctl.on_metadata = function(playerctl, metadata)
-        self:metadata_cb(playerctl, metadata)
+function playerctl:init_player(name)
+    local player = self.Playerctl.Player.new_from_name(name)
+    self.manager:manage_player(player)
+    player.on_metadata = function(player, metadata)
+        self:metadata_cb(player, metadata)
     end
 
-    playerctl.on_playback_status = function(playerctl, status)
-        self:status_cb(playerctl, status)
+    player.on_playback_status = function(player, status)
+        self:status_cb(player, status)
     end
 
-    playerctl.on_seeked = function(playerctl, position)
-        self:update(playerctl, true)
+    player.on_seeked = function(player, position)
+        self:update(player, true)
     end
 
-    playerctl.on_exit = function(playerctl)
+    player.on_exit = function(player)
         self.textbox:set_markup('')
         self.active = nil
         gears.timer.delayed_call(function()
@@ -48,71 +48,71 @@ function player:init_player(name)
         end)
     end
 
-    self.active = playerctl
-    self:init_data(playerctl)
+    self.active = player
+    self:init_data(player)
 end
 
-function player:metadata_cb(playerctl, metadata)
+function playerctl:metadata_cb(player, metadata)
     local data = metadata.value
     self.title = data["xesam:title"] or ""
     self.artist = data["xesam:artist"][1] or ""
     self.length = (data["mpris:length"] or 0) / 10^6
-    self:update(playerctl)
+    self:update(player)
 end
 
-function player:status_cb(playerctl, status)
+function playerctl:status_cb(player, status)
     self.status = status
-    self:update(playerctl, true)
+    self:update(player, true)
 end
 
-function player:playerctl_exists(playerctl)
-    for _, lplayerctl in ipairs(self.manager.players) do
-        if lplayerctl == playerctl then return true end
+function playerctl:player_exists(player)
+    for _, lplayer in ipairs(self.manager.players) do
+        if lplayer == player then return true end
     end
     return false
 end
 
-function player:init_data(playerctl)
-    if not playerctl then
+function playerctl:init_data(player)
+    if not player then
         if not (self.active or self.manager.players[1]) then
             self.textbox:set_markup()
             return
         else
-            playerctl = self.active or self.manager.players[1]
+            player = self.active or self.manager.players[1]
         end
     end
 
-    if not player:playerctl_exists(playerctl) then return end
+    if not playerctl:player_exists(player) then return end
 
-    self.status = playerctl.playback_status
-    self.artist = playerctl:get_artist() or ''
-    self.title = playerctl:get_title() or ''
-    self.length = (playerctl.metadata.value["mpris:length"] or 0) / 10^6
+    self.status = player.playback_status
+    self.artist = player:get_artist() or ''
+    self.title = player:get_title() or ''
+    self.length = (player.metadata.value["mpris:length"] or 0) / 10^6
 
-    self:update(playerctl)
+    self:update(player)
 end
 
-function player:update(playerctl, checkactive)
-    if checkactive and playerctl and self.active ~= playerctl then
-        self.active = playerctl
-        self:init_data(playerctl)
+function playerctl:update(player, checkactive)
+    if checkactive and player and self.active ~= player then
+        self.active = player
+        self:init_data(player)
     end
-    if not playerctl then
+    if not player then
         if not (self.active or self.manager.players[1]) then
             self.textbox:set_markup()
             return
         else
-            playerctl = self.active or self.manager.players[1]
+            player = self.active or self.manager.players[1]
         end
     end
 
-    if not player:playerctl_exists(playerctl) then return end
+    if not playerctl:player_exists(player) then return end
 
     local artist = gears.string.xml_escape(self.artist)
     local title = gears.string.xml_escape(self.title)
-    local position = (playerctl:get_position() or 0) / 10^6
+    local position = (player:get_position() or 0) / 10^6
     if self.length == 0 then
-        self.length = (playerctl.metadata.value["mpris:length"] or 0) / 10^6
+        self.length = (player.metadata.value["mpris:length"] or 0) / 10^6
     end
     local length = self.length
 
@@ -135,57 +135,57 @@ function player:update(playerctl, checkactive)
         .. self:formattime(position) .. separatortime .. self:formattime(length))
 end
 
-function player:playpause(playerctl)
-    playerctl = playerctl or self.active or self.manager.players[1]
-    if not playerctl then return end
-    playerctl:play_pause()
+function playerctl:playpause(player)
+    player = player or self.active or self.manager.players[1]
+    if not player then return end
+    player:play_pause()
 end
 
-function player:play(playerctl)
-    playerctl = playerctl or self.active or self.manager.players[1]
-    if not playerctl then return end
-    playerctl:play()
+function playerctl:play(player)
+    player = player or self.active or self.manager.players[1]
+    if not player then return end
+    player:play()
 end
 
-function player:pause(playerctl)
-    playerctl = playerctl or self.active or self.manager.players[1]
-    if not playerctl then return end
-    playerctl:pause()
+function playerctl:pause(player)
+    player = player or self.active or self.manager.players[1]
+    if not player then return end
+    player:pause()
 end
 
-function player:next(playerctl)
-    playerctl = playerctl or self.active or self.manager.players[1]
-    if not playerctl then return end
-    playerctl:next()
+function playerctl:next(player)
+    player = player or self.active or self.manager.players[1]
+    if not player then return end
+    player:next()
 end
 
-function player:previous(playerctl)
-    playerctl = playerctl or self.active or self.manager.players[1]
-    if not playerctl then return end
-    playerctl:previous()
+function playerctl:previous(player)
+    player = player or self.active or self.manager.players[1]
+    if not player then return end
+    player:previous()
 end
 
-function player:seekfw(amount, playerctl)
+function playerctl:seekfw(amount, player)
     amount = amount or 5
-    playerctl = playerctl or self.active or self.manager.players[1]
-    if not playerctl then return end
-    playerctl:seek(amount * 10^6)
+    player = player or self.active or self.manager.players[1]
+    if not player then return end
+    player:seek(amount * 10^6)
 end
 
-function player:seekbw(amount, playerctl)
+function playerctl:seekbw(amount, player)
     amount = amount or 5
-    playerctl = playerctl or self.active or self.manager.players[1]
-    if not playerctl then return end
-    playerctl:seek('-' .. amount * 10^6)
+    player = player or self.active or self.manager.players[1]
+    if not player then return end
+    player:seek('-' .. amount * 10^6)
 end
 
-function player:stop(playerctl)
-    playerctl = playerctl or self.active or self.manager.players[1]
-    if not playerctl then return end
-    playerctl:stop()
+function playerctl:stop(player)
+    player = player or self.active or self.manager.players[1]
+    if not player then return end
+    player:stop()
 end
 
-function player:new()
+function playerctl:new()
     setmetatable(self, self.mt)
     self.statusicon = wibox.widget.imagebox(beautiful.player_stop)
     self.textbox = wibox.widget.textbox()
@@ -239,4 +239,4 @@ function player:new()
     return self
 end
 
-return setmetatable({}, { __call = function(_, ...) return player:new(...) end })
+return setmetatable({}, { __call = function(_, ...) return playerctl:new(...) end })
