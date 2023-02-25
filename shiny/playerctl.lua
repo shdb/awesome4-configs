@@ -7,7 +7,7 @@ local awful     = require("awful")
 local beautiful = require("beautiful")
 local math      = require('math')
 
-playerctl = { mt = {} }
+local playerctl = { mt = {} }
 
 
 function playerctl:formattime(time)
@@ -73,6 +73,15 @@ function playerctl:player_exists(player)
     return false
 end
 
+function playerctl:have_playing()
+    for ilplayer, lplayer in pairs(self.players) do
+        if lplayer.status and lplayer.status == "PLAYING" then
+            return ilplayer
+        end
+    end
+    return nil
+end
+
 function playerctl:init_data(player)
     if not player then
         if not (self.active or self.manager.players[1]) then
@@ -107,6 +116,12 @@ function playerctl:update(player, checkactive)
         else
             player = self.active or self.manager.players[1]
         end
+    end
+
+    -- when a player gets paused or stopped show an active player if one exists
+    local hplayer = self:have_playing()
+    if hplayer ~= nil and (self.players[player].status == 'PAUSED' or self.players[player].status == 'STOPPED') then
+        player = hplayer
     end
 
     if not playerctl:player_exists(player) then return end
