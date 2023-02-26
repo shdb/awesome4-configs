@@ -41,9 +41,9 @@ function playerctl:init_player(name)
     end
 
     player.on_exit = function(player)
-        self.textbox:set_markup('')
         self.active = nil
         self.players[player] = nil
+        if self:playercount() == 0 then self.textbox:set_markup('') end
         gears.timer.delayed_call(function()
             self:init_data()
         end)
@@ -80,6 +80,14 @@ function playerctl:have_playing()
         end
     end
     return nil
+end
+
+function playerctl:playercount()
+    local count = 0
+    for _, __ in pairs(self.players) do
+        count = count + 1
+    end
+    return count
 end
 
 function playerctl:init_data(player)
