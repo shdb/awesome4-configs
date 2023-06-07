@@ -37,7 +37,7 @@ end
 
 function brightness.update()
     if xrandr == true then
-        awful.spawn.easy_async_with_shell('xrandr --verbose | grep -i brightness | head -n1 | cut -f2 -d" "' , function(stat)
+        awful.spawn.easy_async_with_shell('xrandr --current --verbose | grep -i brightness | head -n1 | cut -f2 -d" "' , function(stat)
             percentage = stat * 100
             vbar:set_value(percentage)
         end)
@@ -71,7 +71,7 @@ function brightness.adjust(amount)
 
     if xrandr == true then
         local newxbrightness = newperc / 100
-        awful.spawn.with_shell('for i in $(xrandr | grep " conn" | cut -f1 -d" "); do xrandr --output $i --brightness ' .. newxbrightness .. "; done")
+        awful.spawn.with_shell('for i in $(xrandr --current | grep " conn" | cut -f1 -d" "); do xrandr --current --output $i --brightness ' .. newxbrightness .. "; done")
     else
         local newsysfsbrightness = math.floor(maxsysfsbrightness / 100 * newperc + 0.5)
         gio.File.new_for_path(sysfspath .. 'brightness'):replace_contents_async(newsysfsbrightness,nil,nil,{},nil,nil,0)
