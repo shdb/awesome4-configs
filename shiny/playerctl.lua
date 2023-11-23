@@ -58,7 +58,7 @@ function playerctl:metadata_cb(player, metadata)
     self.players[player].artist = data["xesam:artist"][1] or ""
     self.players[player].title = data["xesam:title"] or ""
     self.players[player].length = (data["mpris:length"] or 0) / 10^6
-    self:update(player)
+    self:update(player, false, true)
 end
 
 function playerctl:status_cb(player, status)
@@ -108,10 +108,10 @@ function playerctl:init_data(player)
     self.players[player].title = player:get_title() or ''
     self.players[player].length = (player.metadata.value["mpris:length"] or 0) / 10^6
 
-    self:update(player)
+    self:update(player, false, true)
 end
 
-function playerctl:update(player, checkactive)
+function playerctl:update(player, checkactive, norefresh)
     if checkactive and player and self.active ~= player then
         self.active = player
         self:init_data(player)
@@ -137,7 +137,7 @@ function playerctl:update(player, checkactive)
     local artist = gears.string.xml_escape(self.players[player].artist)
     local title = gears.string.xml_escape(self.players[player].title)
     local position = (player:get_position() or 0) / 10^6
-    if self.players[player].length == 0 then
+    if self.players[player].length == 0 and not norefresh then
         self.players[player].length = (player.metadata.value["mpris:length"] or 0) / 10^6
     end
     local length = self.players[player].length
