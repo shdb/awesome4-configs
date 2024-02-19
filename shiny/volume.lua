@@ -25,7 +25,7 @@ local bar = wibox.widget {
         ticks            = true,
         ticks_size       = 2,
         ticks_gap        = 1,
-        max_value        = 150,
+        max_value        = 100,
         widget           = vbar,
     },
     forced_width = 4,
@@ -40,10 +40,13 @@ function volume.update(sleeptime)
     cmd = 'wpctl get-volume @DEFAULT_AUDIO_SINK@'
     if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
     awful.spawn.easy_async_with_shell(cmd, function(stat)
-        local volume = stat:match("(%d.%d%d)")
-        if volume then
-            local volume = tonumber(volume) * 100
-            vbar:set_value(volume)
+        local lvol = stat:match("(%d.%d%d)")
+        if lvol then
+            lvol = tonumber(lvol) * 100
+            if lvol > 100 then
+                lvol = volume.set(100)
+            end
+            vbar:set_value(lvol)
         end
 
         local mute = stat:match("(MUTED)")
@@ -65,6 +68,12 @@ function volume.down(amount)
     amount = amount and amount / 100 or 0.02
     awful.spawn('wpctl set-volume @DEFAULT_AUDIO_SINK@ ' .. amount .. '-')
     volume.update(0.2)
+end
+
+function volume.set(amount)
+    amount = amount and amount / 100
+    awful.spawn('wpctl set-volume @DEFAULT_AUDIO_SINK@ ' .. amount)
+    return amount
 end
 
 function volume.toggle()
