@@ -38,7 +38,7 @@ local function add_calendar(inc_offset)
 end
 
 local function new(args)
-    local mytextclock = wibox.widget.textclock("%a %d.%m " .. shiny.fg(beautiful.highlight, "|") .. " %H:%M:%S")
+    local mytextclock = wibox.widget.textclock("%a %d.%m.%Y " .. shiny.fg(beautiful.highlight, "|") .. " %H:%M:%S")
     mytextclock:set_refresh(1)
     mytextclock:connect_signal("mouse::enter", function() add_calendar(0) end)
     mytextclock:connect_signal("mouse::leave", function() shiny.remove_notify(calendar); cal_offset = 0 end)
