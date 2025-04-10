@@ -2,7 +2,6 @@ local lgi       = require("lgi")
 local gears     = require('gears')
 local shiny     = require("shiny")
 local wibox     = require("wibox")
-local naughty   = require("naughty")
 local awful     = require("awful")
 local beautiful = require("beautiful")
 local math      = require('math')
@@ -28,21 +27,21 @@ end
 function playerctl:init_player(name)
     local player = self.Playerctl.Player.new_from_name(name)
     self.manager:manage_player(player)
-    player.on_metadata = function(player, metadata)
-        self:metadata_cb(player, metadata)
+    player.on_metadata = function(p, m)
+        self:metadata_cb(p, m)
     end
 
-    player.on_playback_status = function(player, status)
-        self:status_cb(player, status)
+    player.on_playback_status = function(p, s)
+        self:status_cb(p, s)
     end
 
-    player.on_seeked = function(player, position)
-        self:update(player, true)
+    player.on_seeked = function(p, _)
+        self:update(p, true)
     end
 
-    player.on_exit = function(player)
+    player.on_exit = function(p)
         self.active = nil
-        self.players[player] = nil
+        self.players[p] = nil
         if self:playercount() == 0 then self.textbox:set_markup('') end
         gears.timer.delayed_call(function()
             self:init_data()
@@ -84,7 +83,7 @@ end
 
 function playerctl:playercount()
     local count = 0
-    for _, __ in pairs(self.players) do
+    for _, _ in pairs(self.players) do
         count = count + 1
     end
     return count
@@ -245,7 +244,7 @@ function playerctl:new()
     closebox:set_markup(shiny.fg(beautiful.highlight, " ]"))
 
     local widgetboxes = {openbox, self.textbox, closebox}
-    for i, widgetbox in ipairs(widgetboxes) do
+    for _, widgetbox in ipairs(widgetboxes) do
         widgetbox:buttons(
             gears.table.join(
                 awful.button({ }, 1, function() self:playpause() end),
