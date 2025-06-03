@@ -5,7 +5,7 @@ local pairs, screen, mouse, client
     = pairs, screen, mouse, client
 
 -- keeps apps on top
-topapps = {
+local topapps = {
     ["Gkrellm"]  = true,
     ["MPlayer"]  = true,
     ["mplayer2"] = true,

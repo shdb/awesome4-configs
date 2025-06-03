@@ -1,7 +1,6 @@
 local gears     = require('gears')
 local shiny     = require("shiny")
 local wibox     = require('wibox')
-local naughty   = require('naughty')
 local awful     = require('awful')
 local beautiful = require('beautiful')
 
@@ -33,11 +32,11 @@ local bar = wibox.widget {
     layout       = wibox.container.rotate,
 }
 
-volume = {}
+local volume = {}
 volume.mt = {}
 
 function volume.update(sleeptime)
-    cmd = 'wpctl get-volume @DEFAULT_AUDIO_SINK@'
+    local cmd = 'wpctl get-volume @DEFAULT_AUDIO_SINK@'
     if sleeptime ~= nil and sleeptime > 0 then cmd = 'sleep ' .. sleeptime .. '; ' .. cmd end
     awful.spawn.easy_async_with_shell(cmd, function(stat)
         local lvol = stat:match("(%d.%d%d)")
