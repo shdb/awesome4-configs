@@ -1,4 +1,6 @@
 local lgi       = require("lgi")
+local Gio       = lgi.Gio
+local GLib      = lgi.GLib
 local gears     = require('gears')
 local shiny     = require("shiny")
 local wibox     = require("wibox")
@@ -8,6 +10,31 @@ local math      = require('math')
 
 local playerctl = { mt = {} }
 
+
+function playerctl:get_property(player, prop_path, callback)
+	-- https://specifications.freedesktop.org/mpris-spec/latest/
+	self.dbus_connection:call('org.mpris.MediaPlayer2.' .. player.player_instance, -- bus
+		'/org/mpris/MediaPlayer2', -- path
+		'org.freedesktop.DBus.Properties', -- interface
+		'Get', -- method
+		GLib.Variant('(ss)', prop_path), -- params
+		GLib.VariantType('(v)'), -- return type
+		Gio.DBusCallFlags.NONE, -1,
+		Gio.Cancellable(),
+		function (connection, result)
+			local ret, err = connection:call_finish(result)
+
+			if err then
+				print('NP: Error ' .. tostring(err))
+				return
+			elseif #ret ~= 1 then
+				return
+			end
+
+			callback(ret[1])
+		end
+    )
+end
 
 function playerctl:formattime(time)
     time = tonumber(time)
@@ -27,6 +54,7 @@ end
 function playerctl:init_player(name)
     local player = self.Playerctl.Player.new_from_name(name)
     self.manager:manage_player(player)
+
     player.on_metadata = function(p, m)
         self:metadata_cb(p, m)
     end
@@ -54,7 +82,7 @@ end
 
 function playerctl:metadata_cb(player, metadata)
     local data = metadata.value
-    self.players[player].artist = data["xesam:artist"][1] or ""
+    self.players[player].artist = data["xesam:artist"] ~= nil and data["xesam:artist"][1] or ""
     self.players[player].title = data["xesam:title"] or ""
     self.players[player].length = (data["mpris:length"] or 0) / 10^6
     self:update(player, false, true)
@@ -103,9 +131,9 @@ function playerctl:init_data(player)
 
     if self.players[player] == nil then self.players[player] = {} end
     self.players[player].status = player.playback_status
-    self.players[player].artist = player:get_artist() or ''
-    self.players[player].title = player:get_title() or ''
-    self.players[player].length = (player.metadata.value["mpris:length"] or 0) / 10^6
+    self.players[player].artist = ''
+    self.players[player].title = ''
+    self.players[player].length = 0
 
     self:update(player, false, true)
 end
@@ -126,24 +154,37 @@ function playerctl:update(player, checkactive, norefresh)
     end
 
     -- when a player gets paused or stopped show an active player if one exists
-    local hplayer = self:have_playing()
-    if hplayer ~= nil and (self.players[player].status == 'PAUSED' or self.players[player].status == 'STOPPED') then
-        player = hplayer
+    if self.players[player].status == 'PAUSED' or self.players[player].status == 'STOPPED' then
+        local hplayer = self:have_playing()
+        if hplayer ~= nil then
+            player = hplayer
+        end
     end
 
     if not playerctl:player_exists(player) then return end
 
+    if not norefresh then
+        self:get_property(player, {'org.mpris.MediaPlayer2.Player', 'Position'},
+            function(lposition)
+                lposition = lposition.value
+                self.players[player].position = (tonumber(lposition) or 0) / 10^6 ;
+            end
+        )
+        self:get_property(player, {'org.mpris.MediaPlayer2.Player', 'Metadata'},
+            function(metadata)
+                playerctl:metadata_cb(player, metadata)
+            end
+        )
+    end
+
     local artist = gears.string.xml_escape(self.players[player].artist)
     local title = gears.string.xml_escape(self.players[player].title)
-    local position = (player:get_position() or 0) / 10^6
-    if self.players[player].length == 0 and not norefresh then
-        self.players[player].length = (player.metadata.value["mpris:length"] or 0) / 10^6
-    end
     local length = self.players[player].length
+    local position = self.players[player].position
 
     local separatorartist = (artist == '' or title == '') and '' or shiny.fg(beautiful.highlight, ' / ')
-    local separatortime = (length == 0 or position == 0) and '' or shiny.fg(beautiful.highlight, ' / ')
-    local separatorposition = (length == 0 or position == 0) and '' or shiny.fg(beautiful.highlight, ' | ')
+    local separatorposition = position == 0 and '' or shiny.fg(beautiful.highlight, ' | ')
+    local separatortime = length == 0 and '' or shiny.fg(beautiful.highlight, ' / ')
     local space = (length == 0 and position == 0 and artist == '' and title == '') and '' or ' '
 
     if self.players[player].status == nil or self.players[player].status == '' then
@@ -218,6 +259,8 @@ function playerctl:new()
     self.manager = self.Playerctl.PlayerManager()
     self.active = nil
     self.players = {}
+
+    self.dbus_connection = assert(Gio.bus_get_sync(Gio.BusType.SESSION))
 
     local _self = self
     -- manage existing players on startup
