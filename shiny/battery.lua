@@ -42,15 +42,29 @@ local function update(wdg)
 
     percentage = math.floor(data['energy'] / data['energy_full'] * 100)
     wdg:set_value(percentage)
+    local charging = false
+    if data['status'] == 'Charging' then charging = true end
     if percentage >= 30 then
         wdg:set_color(beautiful.fg_normal)
-        batteryicon:set_image(beautiful.battery)
+        if charging then
+            batteryicon:set_image(beautiful.battery_plus)
+        else
+            batteryicon:set_image(beautiful.battery)
+        end
     elseif percentage < 15 then
         wdg:set_color(beautiful.fc_urgent)
-        batteryicon:set_image(beautiful.battery_red)
+        if charging then
+            batteryicon:set_image(beautiful.battery_red_plus)
+        else
+            batteryicon:set_image(beautiful.battery_red)
+        end
     elseif percentage < 30 then
         wdg:set_color(beautiful.highlight)
-        batteryicon:set_image(beautiful.battery_yellow)
+        if charging then
+            batteryicon:set_image(beautiful.battery_yellow_plus)
+        else
+            batteryicon:set_image(beautiful.battery_yellow)
+        end
     end
 end
 
