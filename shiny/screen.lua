@@ -31,6 +31,7 @@ local function update()
 
         infobox[s]:set_markup(
             shiny.fg(beautiful.highlight, "[ ")
+            .. "🖵 "
             .. ltext
             .. shiny.fg(beautiful.highlight, "]")
         )
