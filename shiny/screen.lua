@@ -6,6 +6,10 @@ local wibox     = require("wibox")
 local setmetatable = setmetatable
 local tonumber = tonumber
 local client, screen, string, mouse = client, screen, string, mouse
+local order = { }
+for ls = 1, screen.count() do
+    order[ls] = ls
+end
 
 -- display active scren
 
@@ -20,9 +24,9 @@ local function update()
         local ltext = ""
 
         for ls = 1, screen.count() do
-            if mouse.screen.index == s and mouse.screen.index == ls then
-                ltext = ltext .. shiny.fg(beautiful.highlight, s) .. " "
-            elseif mouse.screen.index == ls then
+            if mouse.screen.index == s and order[mouse.screen.index] == ls then
+                ltext = ltext .. shiny.fg(beautiful.highlight, ls) .. " "
+            elseif order[mouse.screen.index] == ls then
                 ltext = ltext .. shiny.fg(beautiful.fg_focus, ls) .. " "
             else
                 ltext = ltext .. ls .. " "
@@ -54,7 +58,8 @@ if screen.count() > 1 then
     end)
 end
 
-function new(lsc)
+function new(lsc, lorder)
+    order = lorder
     return infobox[lsc]
 end
 
