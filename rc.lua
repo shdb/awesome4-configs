@@ -204,6 +204,12 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
+if awesome.hostname == 'vhaeraun' then
+    screen[2]:swap(screen[1])
+    screen[2]:swap(screen[4])
+    screen[4]:swap(screen[3])
+end
+
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
@@ -249,7 +255,7 @@ awful.screen.connect_for_each_screen(function(s)
                 layout = wibox.layout.fixed.horizontal,
                 --mylauncher,
                 s.mytaglist,
-                sscreen(s.index, { 3, 1, 4, 2 }),
+                sscreen(s.index, { 1, 2, 3, 4 }),
                 s.mypromptbox,
             },
             s.mytasklist, -- Middle widget
