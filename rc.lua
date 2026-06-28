@@ -76,6 +76,7 @@ modkey = "Mod4"
 alt    = "Mod1"
 ctrl   = "Control"
 shift  = "Shift"
+altgr  = "Mod5"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
@@ -402,21 +403,31 @@ globalkeys = gears.table.join(
     awful.key({}, "XF86AudioLowerVolume", function() volume.down() end),
     awful.key({ctrl, alt}, "k",           function() volume.up() end),
     awful.key({ctrl, alt}, "j",           function() volume.down() end),
+    awful.key({ctrl, altgr}, "k",         function() volume.up() end),
+    awful.key({ctrl, altgr}, "j",         function() volume.down() end),
     awful.key({}, "XF86AudioMute",        function() volume.toggle() end),
     awful.key({ctrl, alt}, "m",           function() volume.toggle() end),
+    --awful.key({ctrl, altgr}, "m",           function() volume.toggle() end),
     awful.key({}, "XF86AudioPlay",        function() playerctl:playpause() end),
     awful.key({}, "XF86AudioNext",        function() playerctl:next() end),
     awful.key({}, "XF86AudioPrev",        function() playerctl:previous() end),
     awful.key({ctrl, alt}, "space",       function() playerctl:playpause() end),
     awful.key({ctrl, alt}, "l",           function() playerctl:next() end),
     awful.key({ctrl, alt}, "h",           function() playerctl:previous() end),
+    awful.key({ctrl, altgr}, "space",     function() playerctl:playpause() end),
+    awful.key({ctrl, altgr}, "l",         function() playerctl:next() end),
+    awful.key({ctrl, altgr}, "h",         function() playerctl:previous() end),
     awful.key({modkey, ctrl, alt}, "k",   function() playerctl:seekfw() end),
     awful.key({modkey, ctrl, alt}, "j",   function() playerctl:seekbw() end),
     awful.key({modkey, ctrl, alt}, "l",   function() playerctl:pause(); awful.spawn.with_shell("xsecurelock") end,
         {description = "lock the screen", group = "screen"}),
-    awful.key({modkey, ctrl, alt}, "s", function() awful.spawn.with_shell("systemctl suspend-then-hibernate") end,
+    awful.key({modkey, ctrl, altgr}, "k", function() playerctl:seekfw() end),
+    awful.key({modkey, ctrl, altgr}, "j", function() playerctl:seekbw() end),
+    awful.key({modkey, ctrl, altgr}, "l", function() playerctl:pause(); awful.spawn.with_shell("xsecurelock") end,
+        {description = "lock the screen", group = "screen"}),
+    awful.key({modkey, ctrl, alt}, "s",   function() awful.spawn.with_shell("systemctl suspend-then-hibernate") end,
         {description = "suspend the machine", group = "screen"}),
-    awful.key({modkey, ctrl, alt}, "h", function() awful.spawn.with_shell("systemctl hibernate") end,
+    awful.key({modkey, ctrl, alt}, "h",   function() awful.spawn.with_shell("systemctl hibernate") end,
         {description = "hibernate the machine", group = "screen"}),
     awful.key({}, "XF86MonBrightnessDown", function() brightness.adjust(-5) end),
     awful.key({}, "XF86MonBrightnessUp",   function() brightness.adjust( 5) end),
